@@ -8,8 +8,7 @@ import ItemAnimator from './ItemAnimator';
 import { Layout, LayoutManager, Point } from './LayoutManager';
 import { BaseScrollComponent } from './scroll/BaseScrollComponent';
 import { BaseScrollView, BaseScrollViewProps, ScrollEvent } from './scroll/BaseScrollView';
-import { TOnItemStatusChanged } from './ViewabilityTracker';
-import VirtualRenderer, { RenderStack, RenderStackParams } from './VirtualRenderer';
+import { VirtualRenderer, RenderStack, RenderStackParams } from './VirtualRenderer';
 const debounce = require("lodash.debounce");
 
 //#if [REACT-NATIVE]
@@ -283,7 +282,6 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
 
     public UNSAFE_componentWillReceiveProps(newProps: RecyclerListViewProps): void {
         this._checkAndChangeLayouts(newProps);
-        this._virtualRenderer.removeVisibleItemsListener();
     }
 
     public componentDidUpdate(): void {

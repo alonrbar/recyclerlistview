@@ -5,7 +5,7 @@ import CustomError from './exceptions/CustomError';
 import RecyclerListViewExceptions from './exceptions/RecyclerListViewExceptions';
 import { LayoutManager, Point } from './LayoutManager';
 import { Dimension } from './LayoutProvider';
-import ViewabilityTracker, { TOnItemStatusChanged } from './ViewabilityTracker';
+import { ViewabilityTracker } from './ViewabilityTracker';
 
 export interface StableIdMapItem {
     key: React.Key;
@@ -25,9 +25,7 @@ export interface RenderStackParams {
  * items. Notifies list view to re-render if something changes, like scroll
  * offset
  */
-export default class VirtualRenderer {
-
-    private onVisibleItemsChanged: TOnItemStatusChanged | null;
+export class VirtualRenderer {
 
     private _scrollOnNextUpdate: (point: Point) => void;
     private _stableIdToRenderKeyMap: { [key: string]: StableIdMapItem };
@@ -66,8 +64,6 @@ export default class VirtualRenderer {
 
         //Would be surprised if someone exceeds this
         this._startKey = 0;
-
-        this.onVisibleItemsChanged = null;
     }
 
     //
@@ -104,18 +100,6 @@ export default class VirtualRenderer {
                 this.startViewabilityTracker();
             }
             this._viewabilityTracker.updateOffset(offset, correction, isActual);
-        }
-    }
-
-    public attachVisibleItemsListener(callback: TOnItemStatusChanged): void {
-        this.onVisibleItemsChanged = callback;
-    }
-
-    public removeVisibleItemsListener(): void {
-        this.onVisibleItemsChanged = null;
-
-        if (this._viewabilityTracker) {
-            this._viewabilityTracker.onVisibleRowsChanged = null;
         }
     }
 
@@ -185,7 +169,7 @@ export default class VirtualRenderer {
             }
         }
         return offset;
-    }    
+    }
 
     public startViewabilityTracker(): void {
         if (this._viewabilityTracker) {
@@ -246,9 +230,6 @@ export default class VirtualRenderer {
     private _prepareViewabilityTracker(): void {
         if (this._viewabilityTracker && this._layoutManager && this._dimensions && this._params) {
             this._viewabilityTracker.onEngagedRowsChanged = this._onEngagedItemsChanged;
-            if (this.onVisibleItemsChanged) {
-                this._viewabilityTracker.onVisibleRowsChanged = this._onVisibleItemsChanged;
-            }
             this._viewabilityTracker.setLayouts(this._layoutManager.getLayouts(), this._params.isHorizontal ?
                 this._layoutManager.getContentDimension().width :
                 this._layoutManager.getContentDimension().height);
@@ -258,12 +239,6 @@ export default class VirtualRenderer {
             }, this._params.isHorizontal);
         } else {
             throw new CustomError(RecyclerListViewExceptions.initializationException);
-        }
-    }
-
-    private _onVisibleItemsChanged = (all: number[], now: number[], notNow: number[]): void => {
-        if (this.onVisibleItemsChanged) {
-            this.onVisibleItemsChanged(all, now, notNow);
         }
     }
 

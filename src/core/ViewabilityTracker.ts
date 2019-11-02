@@ -16,8 +16,7 @@ export type TOnItemStatusChanged = ((all: number[], now: number[], notNow: numbe
  * We use binary search to optimize in most cases like while finding first visible item or initial offset. In future we'll also be using BS to speed up
  * scroll to offset.
  */
-export default class ViewabilityTracker {
-    public onVisibleRowsChanged: TOnItemStatusChanged | null;
+export class ViewabilityTracker {
     public onEngagedRowsChanged: TOnItemStatusChanged | null;
 
     private _currentOffset: number;
@@ -47,7 +46,6 @@ export default class ViewabilityTracker {
         this._visibleIndexes = [];  //needs to be sorted
         this._engagedIndexes = [];  //needs to be sorted
 
-        this.onVisibleRowsChanged = null;
         this.onEngagedRowsChanged = null;
 
         this._relevantDim = { start: 0, end: 0 };
@@ -136,7 +134,7 @@ export default class ViewabilityTracker {
         return this._renderAheadOffset;
     }
     public setActualOffset(actualOffset: number): void {
-       this._actualOffset = actualOffset;
+        this._actualOffset = actualOffset;
     }
 
     private _findFirstVisibleIndexOptimally(): number {
@@ -225,10 +223,10 @@ export default class ViewabilityTracker {
     }
 
     private _checkIntersectionAndReport(index: number,
-                                        insertOnTop: boolean,
-                                        relevantDim: Range,
-                                        newVisibleIndexes: number[],
-                                        newEngagedIndexes: number[]): boolean {
+        insertOnTop: boolean,
+        relevantDim: Range,
+        newVisibleIndexes: number[],
+        newEngagedIndexes: number[]): boolean {
         const itemRect = this._layouts[index];
         let isFound = false;
         this._setRelevantBounds(itemRect, relevantDim);
@@ -301,19 +299,19 @@ export default class ViewabilityTracker {
 
     //TODO:Talha optimize this
     private _diffUpdateOriginalIndexesAndRaiseEvents(newVisibleItems: number[], newEngagedItems: number[]): void {
-        this._diffArraysAndCallFunc(newVisibleItems, this._visibleIndexes, this.onVisibleRowsChanged);
         this._diffArraysAndCallFunc(newEngagedItems, this._engagedIndexes, this.onEngagedRowsChanged);
         this._visibleIndexes = newVisibleItems;
         this._engagedIndexes = newEngagedItems;
     }
 
     private _diffArraysAndCallFunc(newItems: number[], oldItems: number[], func: TOnItemStatusChanged | null): void {
-        if (func) {
-            const now = this._calculateArrayDiff(newItems, oldItems);
-            const notNow = this._calculateArrayDiff(oldItems, newItems);
-            if (now.length > 0 || notNow.length > 0) {
-                func([...newItems], now, notNow);
-            }
+        if (!func)
+            return;
+            
+        const now = this._calculateArrayDiff(newItems, oldItems);
+        const notNow = this._calculateArrayDiff(oldItems, newItems);
+        if (now.length > 0 || notNow.length > 0) {
+            func([...newItems], now, notNow);
         }
     }
 
