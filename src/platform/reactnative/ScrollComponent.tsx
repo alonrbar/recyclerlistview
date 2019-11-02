@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from 'react-native';
-import { BaseScrollComponent, ScrollComponentProps } from '../../../core/scrollcomponent/BaseScrollComponent';
-import TSCast from '../../../utils/TSCast';
+import { BaseScrollComponent, ScrollComponentProps } from '../../core/scroll/BaseScrollComponent';
+import TSCast from '../../utils/TSCast';
 
 /**
  * The responsibility of a scroll component is to report its size, scroll events

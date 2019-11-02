@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Dimension } from "../dependencies/LayoutProvider";
+import { Dimension } from "../LayoutProvider";
 import { ScrollEvent, BaseScrollView, BaseScrollViewProps } from "./BaseScrollView";
 
 export interface ScrollComponentProps {

@@ -1,5 +1,5 @@
-import { Dimension, LayoutProvider } from '../dependencies/LayoutProvider';
-import CustomError from '../exceptions/CustomError';
+import { Dimension, LayoutProvider } from './LayoutProvider';
+import CustomError from './exceptions/CustomError';
 
 /***
  * Computes the positions and dimensions of items that will be rendered by the list. The output from this is utilized by viewability tracker to compute the

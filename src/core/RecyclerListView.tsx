@@ -1,23 +1,23 @@
 import * as React from 'react';
 import { Default, ObjectUtil } from 'ts-object-utils';
 import { Constants } from './constants/Constants';
-import { DataProvider } from './dependencies/DataProvider';
-import { BaseLayoutProvider, Dimension } from './dependencies/LayoutProvider';
+import { DataProvider } from './DataProvider';
+import { BaseLayoutProvider, Dimension } from './LayoutProvider';
 import CustomError from './exceptions/CustomError';
 import RecyclerListViewExceptions from './exceptions/RecyclerListViewExceptions';
 import ItemAnimator from './ItemAnimator';
-import { Layout, LayoutManager, Point } from './layoutmanager/LayoutManager';
-import { BaseScrollComponent } from './scrollcomponent/BaseScrollComponent';
-import { BaseScrollView, BaseScrollViewProps, ScrollEvent } from './scrollcomponent/BaseScrollView';
+import { Layout, LayoutManager, Point } from './LayoutManager';
+import { BaseScrollComponent } from './scroll/BaseScrollComponent';
+import { BaseScrollView, BaseScrollViewProps, ScrollEvent } from './scroll/BaseScrollView';
 import { TOnItemStatusChanged } from './ViewabilityTracker';
 import VirtualRenderer, { RenderStack, RenderStackParams } from './VirtualRenderer';
 const debounce = require("lodash.debounce");
 
 //#if [REACT-NATIVE]
 // import { Platform } from 'react-native';
-// import { DefaultJSItemAnimator as DefaultItemAnimator } from '../platform/reactnative/itemanimators/defaultjsanimator/DefaultJSItemAnimator';
-// import ScrollComponent from '../platform/reactnative/scrollcomponent/ScrollComponent';
-// import ViewRenderer from '../platform/reactnative/viewrenderer/ViewRenderer';
+// import { DefaultJSItemAnimator as DefaultItemAnimator } from '../platform/reactnative/defaultjsanimator/DefaultJSItemAnimator';
+// import ScrollComponent from '../platform/reactnative/ScrollComponent';
+// import ViewRenderer from '../platform/reactnative/ViewRenderer';
 // const IS_WEB = !Platform || Platform.OS === "web";
 //#endif
 
@@ -25,9 +25,9 @@ const debounce = require("lodash.debounce");
 // easier specify an alias in you builder of choice.
 
 //#if [WEB]
-import ScrollComponent from "../platform/web/scrollcomponent/ScrollComponent";
-import ViewRenderer from "../platform/web/viewrenderer/ViewRenderer";
-import { DefaultWebItemAnimator as DefaultItemAnimator } from "../platform/web/itemanimators/DefaultWebItemAnimator";
+import ScrollComponent from "../platform/web/ScrollComponent";
+import ViewRenderer from "../platform/web/ViewRenderer";
+import { DefaultWebItemAnimator as DefaultItemAnimator } from "../platform/web/DefaultWebItemAnimator";
 const IS_WEB = true;
 //#endif
 

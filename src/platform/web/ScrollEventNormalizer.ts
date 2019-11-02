@@ -1,4 +1,4 @@
-import { ScrollEvent } from "../../../core/scrollcomponent/BaseScrollView";
+import { ScrollEvent } from "../../core/scroll/BaseScrollView";
 
 export class ScrollEventNormalizer {
     public divEvent: ScrollEvent;

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BaseScrollView, BaseScrollViewProps } from '../../../core/scrollcomponent/BaseScrollView';
+import { BaseScrollView, BaseScrollViewProps } from '../../core/scroll/BaseScrollView';
 import { ScrollEventNormalizer } from './ScrollEventNormalizer';
 const debounce = require("lodash.debounce");
 

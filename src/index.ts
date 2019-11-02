@@ -1,9 +1,9 @@
-import { DataProvider } from "./core/dependencies/DataProvider";
-import { BaseLayoutProvider, Dimension, LayoutProvider } from "./core/dependencies/LayoutProvider";
+import { DataProvider } from "./core/DataProvider";
+import { BaseLayoutProvider, Dimension, LayoutProvider } from "./core/LayoutProvider";
 import RecyclerListView, { OnRecreateParams } from "./core/RecyclerListView";
-import { BaseScrollView } from "./core/scrollcomponent/BaseScrollView";
+import { BaseScrollView } from "./core/scroll/BaseScrollView";
 import { BaseItemAnimator } from "./core/ItemAnimator";
-import { Layout, LayoutManager, Point, WrapGridLayoutManager } from "./core/layoutmanager/LayoutManager";
+import { Layout, LayoutManager, Point, WrapGridLayoutManager } from "./core/LayoutManager";
 // import ProgressiveListView from "./core/ProgressiveListView";
 
 export {

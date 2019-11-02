@@ -1,5 +1,5 @@
 import { Animated, Easing, View } from "react-native";
-import { BaseItemAnimator } from "../../../../core/ItemAnimator";
+import { BaseItemAnimator } from "../../core/ItemAnimator";
 
 interface UnmountAwareView extends View {
     _isUnmountedForRecyclerListView?: boolean;

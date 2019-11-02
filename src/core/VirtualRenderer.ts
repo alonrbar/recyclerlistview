@@ -1,12 +1,12 @@
 import RecycleItemPool from "../utils/RecycleItemPool";
-import { Dimension, BaseLayoutProvider } from "./dependencies/LayoutProvider";
+import { Dimension, BaseLayoutProvider } from "./LayoutProvider";
 import CustomError from "./exceptions/CustomError";
 import RecyclerListViewExceptions from "./exceptions/RecyclerListViewExceptions";
-import { Point, LayoutManager } from "./layoutmanager/LayoutManager";
+import { Point, LayoutManager } from "./LayoutManager";
 import ViewabilityTracker, { TOnItemStatusChanged } from "./ViewabilityTracker";
 import { ObjectUtil, Default } from "ts-object-utils";
 import TSCast from "../utils/TSCast";
-import { DataProvider } from "./dependencies/DataProvider";
+import { DataProvider } from "./DataProvider";
 
 export interface StableIdMapItem {
     key: React.Key;

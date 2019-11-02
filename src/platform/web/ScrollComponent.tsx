@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Dimension } from '../../../core/dependencies/LayoutProvider';
-import { BaseScrollComponent, ScrollComponentProps } from '../../../core/scrollcomponent/BaseScrollComponent';
-import { BaseScrollView, ScrollEvent } from '../../../core/scrollcomponent/BaseScrollView';
+import { Dimension } from '../../core/LayoutProvider';
+import { BaseScrollComponent, ScrollComponentProps } from '../../core/scroll/BaseScrollComponent';
+import { BaseScrollView, ScrollEvent } from '../../core/scroll/BaseScrollView';
 import ScrollViewer from './ScrollViewer';
 /***
  * The responsibility of a scroll component is to report its size, scroll events and provide a way to scroll to a given offset.

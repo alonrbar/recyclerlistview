@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Dimension, BaseLayoutProvider } from "../dependencies/LayoutProvider";
-import ItemAnimator from "../ItemAnimator";
+import { Dimension, BaseLayoutProvider } from "./LayoutProvider";
+import ItemAnimator from "./ItemAnimator";
 
 
 export interface ViewRendererProps {

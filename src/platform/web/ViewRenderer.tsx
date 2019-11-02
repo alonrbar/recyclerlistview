@@ -1,7 +1,7 @@
 import * as React from "react";
 import { CSSProperties } from "react";
-import { Dimension } from "../../../core/dependencies/LayoutProvider";
-import BaseViewRenderer from "../../../core/viewrenderer/BaseViewRenderer";
+import { Dimension } from "../../core/LayoutProvider";
+import BaseViewRenderer from "../../core/BaseViewRenderer";
 
 /**
  * View renderer is responsible for creating a container of size provided by LayoutProvider and render content inside it.

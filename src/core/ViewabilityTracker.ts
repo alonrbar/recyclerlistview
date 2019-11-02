@@ -1,6 +1,6 @@
 import BinarySearch from "../utils/BinarySearch";
-import { Dimension } from "./dependencies/LayoutProvider";
-import { Layout } from "./layoutmanager/LayoutManager";
+import { Dimension } from "./LayoutProvider";
+import { Layout } from "./LayoutManager";
 /***
  * Given an offset this utility can compute visible items. Also tracks previously visible items to compute items which get hidden or visible
  * Virtual renderer uses callbacks from this utility to main recycle pool and the render stack.
