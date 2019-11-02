@@ -10,6 +10,7 @@
     "strict": true,
     "noImplicitReturns": true,
     "removeComments": false,
+    "strictNullChecks": false,
     "jsx": "react",
     "sourceMap": true,
     "skipLibCheck": true

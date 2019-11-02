@@ -2,7 +2,7 @@ import * as React from "react";
 import { CSSProperties } from "react";
 import { Dimension } from "../dependencies/LayoutProvider";
 
-export interface ScrollViewDefaultProps {
+export interface BaseScrollViewProps {
     onScroll: (event: ScrollEvent) => void;
     onSizeChanged: (dimensions: Dimension) => void;
     horizontal: boolean;
@@ -10,6 +10,7 @@ export interface ScrollViewDefaultProps {
     style?: CSSProperties | null;
     useWindowScroll: boolean;
 }
+
 export interface ScrollEvent {
     nativeEvent: {
         contentOffset: {
@@ -20,8 +21,10 @@ export interface ScrollEvent {
         contentSize?: Dimension,
     };
 }
-export default abstract class BaseScrollView extends React.Component<ScrollViewDefaultProps, {}> {
-    constructor(props: ScrollViewDefaultProps) {
+
+export abstract class BaseScrollView extends React.Component<BaseScrollViewProps, {}> {
+    
+    constructor(props: BaseScrollViewProps) {
         super(props);
     }
 

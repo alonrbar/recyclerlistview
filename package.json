@@ -5,11 +5,13 @@
   "main": "dist/reactnative/index.js",
   "types": "dist/reactnative/index.d.ts",
   "scripts": {
-    "build": "sh scripts/build.sh",
-    "clean": "sh scripts/clean.sh",
-    "release": "sh scripts/publish-latest.sh",
-    "release-beta": "sh scripts/publish-beta.sh",
-    "release-local": "sh scripts/publish-local.sh"
+    "lint": "tslint 'src/**/*.{ts,tsx}'",
+    "typecheck": "tsc --noEmit",
+    "build": "bash scripts/build.sh",
+    "clean": "bash scripts/clean.sh",
+    "release": "bash scripts/publish-latest.sh",
+    "release-beta": "bash scripts/publish-beta.sh",
+    "release-local": "bash scripts/publish-local.sh"
   },
   "keywords": [
     "react-native",

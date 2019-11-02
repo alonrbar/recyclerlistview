@@ -22,25 +22,20 @@ export abstract class BaseLayoutProvider {
     //in cases of conxtext preservation. Make sure you use them if provided.
     public abstract newLayoutManager(renderWindowSize: Dimension, isHorizontal?: boolean, cachedLayouts?: Layout[]): LayoutManager;
 
-    //Given an index a provider is expected to return a view type which used to recycling choices
-    public abstract getLayoutTypeForIndex(index: number): string | number;
-
     //Check if given dimension contradicts with your layout provider, return true for mismatches. Returning true will
     //cause a relayout to fix the discrepancy
-    public abstract checkDimensionDiscrepancy(dimension: Dimension, type: string | number, index: number): boolean;
+    public abstract checkDimensionDiscrepancy(dimension: Dimension, index: number): boolean;
 }
 
 export class LayoutProvider extends BaseLayoutProvider {
 
-    private _getLayoutTypeForIndex: (index: number) => string | number;
-    private _setLayoutForType: (type: string | number, dim: Dimension, index: number) => void;
+    private _setLayout: (dim: Dimension, index: number) => void;
     private _tempDim: Dimension;
     private _lastLayoutManager: WrapGridLayoutManager | undefined;
 
-    constructor(getLayoutTypeForIndex: (index: number) => string | number, setLayoutForType: (type: string | number, dim: Dimension, index: number) => void) {
+    constructor(setLayout: (dim: Dimension, index: number) => void) {
         super();
-        this._getLayoutTypeForIndex = getLayoutTypeForIndex;
-        this._setLayoutForType = setLayoutForType;
+        this._setLayout = setLayout;
         this._tempDim = { height: 0, width: 0 };
     }
 
@@ -49,20 +44,15 @@ export class LayoutProvider extends BaseLayoutProvider {
         return this._lastLayoutManager;
     }
 
-    //Provide a type for index, something which identifies the template of view about to load
-    public getLayoutTypeForIndex(index: number): string | number {
-        return this._getLayoutTypeForIndex(index);
-    }
-
     //Given a type and dimension set the dimension values on given dimension object
     //You can also get index here if you add an extra argument but we don't recommend using it.
-    public setComputedLayout(type: string | number, dimension: Dimension, index: number): void {
-        return this._setLayoutForType(type, dimension, index);
+    public setComputedLayout(dimension: Dimension, index: number): void {
+        return this._setLayout(dimension, index);
     }
 
-    public checkDimensionDiscrepancy(dimension: Dimension, type: string | number, index: number): boolean {
+    public checkDimensionDiscrepancy(dimension: Dimension, index: number): boolean {
         const dimension1 = dimension;
-        this.setComputedLayout(type, this._tempDim, index);
+        this.setComputedLayout(this._tempDim, index);
         const dimension2 = this._tempDim;
         if (this._lastLayoutManager) {
             this._lastLayoutManager.setMaxBounds(dimension2);

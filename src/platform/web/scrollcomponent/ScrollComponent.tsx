@@ -1,8 +1,8 @@
-import * as React from "react";
-import { Dimension } from "../../../core/dependencies/LayoutProvider";
-import BaseScrollComponent, { ScrollComponentProps } from "../../../core/scrollcomponent/BaseScrollComponent";
-import BaseScrollView, { ScrollEvent } from "../../../core/scrollcomponent/BaseScrollView";
-import ScrollViewer from "./ScrollViewer";
+import * as React from 'react';
+import { Dimension } from '../../../core/dependencies/LayoutProvider';
+import { BaseScrollComponent, ScrollComponentProps } from '../../../core/scrollcomponent/BaseScrollComponent';
+import { BaseScrollView, ScrollEvent } from '../../../core/scrollcomponent/BaseScrollView';
+import ScrollViewer from './ScrollViewer';
 /***
  * The responsibility of a scroll component is to report its size, scroll events and provide a way to scroll to a given offset.
  * RecyclerListView works on top of this interface and doesn't care about the implementation. To support web we only had to provide

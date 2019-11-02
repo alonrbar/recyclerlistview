@@ -1,20 +1,16 @@
-import * as React from "react";
-import {
-    LayoutChangeEvent,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    ScrollView,
-    View,
-} from "react-native";
-import BaseScrollComponent, { ScrollComponentProps } from "../../../core/scrollcomponent/BaseScrollComponent";
-import TSCast from "../../../utils/TSCast";
-/***
- * The responsibility of a scroll component is to report its size, scroll events and provide a way to scroll to a given offset.
- * RecyclerListView works on top of this interface and doesn't care about the implementation. To support web we only had to provide
- * another component written on top of web elements
- */
+import * as React from 'react';
+import { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from 'react-native';
+import { BaseScrollComponent, ScrollComponentProps } from '../../../core/scrollcomponent/BaseScrollComponent';
+import TSCast from '../../../utils/TSCast';
 
+/**
+ * The responsibility of a scroll component is to report its size, scroll events
+ * and provide a way to scroll to a given offset. RecyclerListView works on top
+ * of this interface and doesn't care about the implementation. To support web
+ * we only had to provide another component written on top of web elements
+ */
 export default class ScrollComponent extends BaseScrollComponent {
+
     public static defaultProps = {
         contentHeight: 0,
         contentWidth: 0,
@@ -78,23 +74,23 @@ export default class ScrollComponent extends BaseScrollComponent {
 
     private _getScrollViewRef = (scrollView: any) => { this._scrollViewRef = scrollView as (ScrollView | null); };
 
-    private _onScroll = (event?: NativeSyntheticEvent<NativeScrollEvent>): void => {
-        if (event) {
-            this.props.onScroll(event.nativeEvent.contentOffset.x, event.nativeEvent.contentOffset.y, event);
+    private _onScroll = (e?: NativeSyntheticEvent<NativeScrollEvent>): void => {
+        if (e) {
+            this.props.onScroll(e.nativeEvent.contentOffset.x, e.nativeEvent.contentOffset.y, e);
         }
     }
 
-    private _onLayout = (event: LayoutChangeEvent): void => {
-        if (this._height !== event.nativeEvent.layout.height || this._width !== event.nativeEvent.layout.width) {
-            this._height = event.nativeEvent.layout.height;
-            this._width = event.nativeEvent.layout.width;
+    private _onLayout = (e: LayoutChangeEvent): void => {
+        if (this._height !== e.nativeEvent.layout.height || this._width !== e.nativeEvent.layout.width) {
+            this._height = e.nativeEvent.layout.height;
+            this._width = e.nativeEvent.layout.width;
             if (this.props.onSizeChanged) {
                 this._isSizeChangedCalledOnce = true;
-                this.props.onSizeChanged(event.nativeEvent.layout);
+                this.props.onSizeChanged(e.nativeEvent.layout);
             }
         }
         if (this.props.onLayout) {
-            this.props.onLayout(event);
+            this.props.onLayout(e);
         }
     }
 }

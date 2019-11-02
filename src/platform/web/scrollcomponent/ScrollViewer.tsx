@@ -1,14 +1,15 @@
-import * as React from "react";
-import BaseScrollView, { ScrollEvent, ScrollViewDefaultProps } from "../../../core/scrollcomponent/BaseScrollView";
+import * as React from 'react';
+import { BaseScrollView, BaseScrollViewProps } from '../../../core/scrollcomponent/BaseScrollView';
+import { ScrollEventNormalizer } from './ScrollEventNormalizer';
 import debounce = require("lodash.debounce");
-import { ScrollEventNormalizer } from "./ScrollEventNormalizer";
 
 /***
  * A scrollviewer that mimics react native scrollview. Additionally on web it can start listening to window scroll events optionally.
  * Supports both window scroll and scrollable divs inside other divs.
  */
 export default class ScrollViewer extends BaseScrollView {
-    public static defaultProps = {
+    
+    public static defaultProps: Partial<BaseScrollViewProps> = {
         canChangeSize: false,
         horizontal: false,
         style: null,
@@ -22,6 +23,7 @@ export default class ScrollViewer extends BaseScrollView {
     private _mainDivRef: HTMLDivElement | null = null;
     private _isScrolling: boolean = false;
     private _scrollEventNormalizer: ScrollEventNormalizer | null = null;
+
     public componentDidMount(): void {
         if (this.props.onSizeChanged) {
             if (this.props.useWindowScroll) {

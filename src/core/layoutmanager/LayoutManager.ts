@@ -1,10 +1,10 @@
+import { Dimension, LayoutProvider } from '../dependencies/LayoutProvider';
+import CustomError from '../exceptions/CustomError';
+
 /***
  * Computes the positions and dimensions of items that will be rendered by the list. The output from this is utilized by viewability tracker to compute the
  * lists of visible/hidden item.
  */
-import { Dimension, LayoutProvider } from "../dependencies/LayoutProvider";
-import CustomError from "../exceptions/CustomError";
-
 export abstract class LayoutManager {
     public getOffsetForIndex(index: number): Point {
         const layouts = this.getLayouts();
@@ -95,7 +95,7 @@ export class WrapGridLayoutManager extends LayoutManager {
         }
     }
 
-    //TODO:Talha laziliy calculate in future revisions
+    // TODO: Talha laziliy calculate in future revisions
     public relayoutFromIndex(startIndex: number, itemCount: number): void {
         startIndex = this._locateFirstNeighbourIndex(startIndex);
         let startX = 0;
@@ -118,12 +118,11 @@ export class WrapGridLayoutManager extends LayoutManager {
 
         for (let i = startIndex; i < itemCount; i++) {
             oldLayout = this._layouts[i];
-            const layoutType = this._layoutProvider.getLayoutTypeForIndex(i);
-            if (oldLayout && oldLayout.isOverridden && oldLayout.type === layoutType) {
+            if (oldLayout && oldLayout.isOverridden) {
                 itemDim.height = oldLayout.height;
                 itemDim.width = oldLayout.width;
             } else {
-                this._layoutProvider.setComputedLayout(layoutType, itemDim, i);
+                this._layoutProvider.setComputedLayout(itemDim, i);
             }
             this.setMaxBounds(itemDim);
             while (!this._checkBounds(startX, startY, itemDim, this._isHorizontal)) {
@@ -143,12 +142,11 @@ export class WrapGridLayoutManager extends LayoutManager {
 
             //TODO: Talha creating array upfront will speed this up
             if (i > oldItemCount - 1) {
-                this._layouts.push({ x: startX, y: startY, height: itemDim.height, width: itemDim.width, type: layoutType });
+                this._layouts.push({ x: startX, y: startY, height: itemDim.height, width: itemDim.width });
             } else {
                 itemRect = this._layouts[i];
                 itemRect.x = startX;
                 itemRect.y = startY;
-                itemRect.type = layoutType;
                 itemRect.width = itemDim.width;
                 itemRect.height = itemDim.height;
             }
@@ -207,8 +205,8 @@ export class WrapGridLayoutManager extends LayoutManager {
 
 export interface Layout extends Dimension, Point {
     isOverridden?: boolean;
-    type: string | number;
 }
+
 export interface Point {
     x: number;
     y: number;
