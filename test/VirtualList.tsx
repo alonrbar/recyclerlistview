@@ -54,7 +54,7 @@ export class VirtualList extends React.PureComponent<ListProps> implements List 
         );
     }
 
-    private rowRenderer = (layoutType: any, index: number) => {
+    private rowRenderer = (index: number) => {
         return this.props.children(index);
     }
 }
