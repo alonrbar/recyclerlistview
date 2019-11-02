@@ -103,12 +103,7 @@ export interface RecyclerListViewProps {
      * as an externalScrollView. If you want this to be accounted in
      * scrollToOffset please override the method and handle manually.
      */
-    distanceFromWindow?: number;
-    /**
-     * Turns off recycling. You still get progressive rendering and all other
-     * features. Good for lazy rendering. This should not be used in most cases.
-     */
-    disableRecycling?: boolean;
+    distanceFromWindow?: number;    
     /**
      * Default is false, if enabled dimensions provided in layout provider will
      * not be strictly enforced. Rendered dimensions will be used to relayout
@@ -150,7 +145,6 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
 
     public static defaultProps: Partial<RecyclerListViewProps> = {
         canChangeSize: false,
-        disableRecycling: false,
         initialOffset: 0,
         initialRenderIndex: 0,
         isHorizontal: false,
@@ -184,8 +178,7 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
 
         this._virtualRenderer = new VirtualRenderer(
             this.updateItemsToRender,
-            offset => { this._pendingScrollToOffset = offset; },
-            !props.disableRecycling
+            offset => { this._pendingScrollToOffset = offset; }
         );
 
         this.state = {

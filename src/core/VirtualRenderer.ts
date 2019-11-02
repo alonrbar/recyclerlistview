@@ -39,7 +39,6 @@ export class VirtualRenderer {
      */
     private itemsToRender: ItemsToRender;
     private onRenderItems: (itemsToRender: ItemsToRender) => void;
-    private _isRecyclingEnabled: boolean;
     private _isViewTrackerRunning: boolean;
     private _markDirty: boolean;
     private _startKey: number;
@@ -51,10 +50,9 @@ export class VirtualRenderer {
 
     constructor(
         onRenderItems: (itemsToRender: ItemsToRender) => void,
-        scrollOnNextUpdate: (point: Point) => void,
-        isRecyclingEnabled: boolean
+        scrollOnNextUpdate: (point: Point) => void
     ) {
-        
+
         this.onRenderItems = onRenderItems;
         this._scrollOnNextUpdate = scrollOnNextUpdate;
         this.itemsToRender = {};
@@ -63,7 +61,6 @@ export class VirtualRenderer {
         this._engagedIndexes = {};
         this._dimensions = null;
         this._params = null;
-        this._isRecyclingEnabled = isRecyclingEnabled;
 
         this._isViewTrackerRunning = false;
         this._markDirty = false;
@@ -97,16 +94,17 @@ export class VirtualRenderer {
     }
 
     public updateOffset(offsetX: number, offsetY: number, correction: number, isActual: boolean): void {
-        if (this._viewabilityTracker) {
-            const offset = this._params && this._params.isHorizontal ? offsetX : offsetY;
-            if (!this._isViewTrackerRunning) {
-                if (isActual) {
-                    this._viewabilityTracker.setActualOffset(offset);
-                }
-                this.startViewabilityTracker();
+        if (!this._viewabilityTracker)
+            return;
+
+        const offset = this._params && this._params.isHorizontal ? offsetX : offsetY;
+        if (!this._isViewTrackerRunning) {
+            if (isActual) {
+                this._viewabilityTracker.setActualOffset(offset);
             }
-            this._viewabilityTracker.updateOffset(offset, correction, isActual);
+            this.startViewabilityTracker();
         }
+        this._viewabilityTracker.updateOffset(offset, correction, isActual);
     }
 
     public getLayoutManager(): LayoutManager | null {
@@ -251,18 +249,16 @@ export class VirtualRenderer {
         const count = notNow.length;
         let resolvedKey;
         let disengagedIndex = 0;
-        if (this._isRecyclingEnabled) {
-            for (let i = 0; i < count; i++) {
-                disengagedIndex = notNow[i];
-                delete this._engagedIndexes[disengagedIndex];
-                if (this._params && disengagedIndex < this._params.itemCount) {
-                    // All the items which are now not visible can go to the
-                    // recycle pool, the pool only needs to maintain keys since
-                    // react can link a view to a key automatically
-                    resolvedKey = this._stableIdToRenderKeyMap[disengagedIndex];
-                    if (!isNullOrUndefined(resolvedKey)) {
-                        this._recyclePool.add(resolvedKey.key);
-                    }
+        for (let i = 0; i < count; i++) {
+            disengagedIndex = notNow[i];
+            delete this._engagedIndexes[disengagedIndex];
+            if (this._params && disengagedIndex < this._params.itemCount) {
+                // All the items which are now not visible can go to the
+                // recycle pool, the pool only needs to maintain keys since
+                // react can link a view to a key automatically
+                resolvedKey = this._stableIdToRenderKeyMap[disengagedIndex];
+                if (!isNullOrUndefined(resolvedKey)) {
+                    this._recyclePool.add(resolvedKey.key);
                 }
             }
         }
