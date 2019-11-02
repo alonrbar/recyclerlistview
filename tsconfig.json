@@ -3,19 +3,20 @@
     "src"
   ],
   "compilerOptions": {
-    "lib": ["es6", "dom"], // target Node.js(v6)
-    "types": ["react", "react-native"],
-    "module": "commonjs", // export compatibility
-    "target": "es5", // target Node.js(v6)
-    "moduleResolution": "node", // target Node.js(v6)
-    "declaration": true, // generate TypeScript definitions
-    "rootDir": "src",
-    "strict": true,
+    "declaration": true,
+    "downlevelIteration": true,
+    "jsx": "react",
+    "lib": ["es6", "dom"],
+    "module": "commonjs",
+    "moduleResolution": "node",
     "noImplicitReturns": true,
     "removeComments": false,
-    "strictNullChecks": false,
-    "jsx": "react",
-    "sourceMap": true,
+    "rootDir": "src",
     "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": false,
+    "target": "es5",
+    "types": ["react", "react-native"]
   }
 }

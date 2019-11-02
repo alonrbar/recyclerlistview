@@ -13,7 +13,7 @@ import { BaseScrollComponent } from './scrollcomponent/BaseScrollComponent';
 import { BaseScrollView, BaseScrollViewProps, ScrollEvent } from './scrollcomponent/BaseScrollView';
 import { TOnItemStatusChanged } from './ViewabilityTracker';
 import VirtualRenderer, { RenderStack, RenderStackParams } from './VirtualRenderer';
-import debounce = require("lodash.debounce");
+const debounce = require("lodash.debounce");
 
 //#if [REACT-NATIVE]
 // import { Platform } from 'react-native';
