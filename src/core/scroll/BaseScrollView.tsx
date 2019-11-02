@@ -8,7 +8,6 @@ export interface BaseScrollViewProps {
     horizontal: boolean;
     canChangeSize: boolean;
     style?: CSSProperties | null;
-    useWindowScroll: boolean;
 }
 
 export interface ScrollEvent {

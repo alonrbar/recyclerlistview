@@ -8,12 +8,11 @@ const debounce = require("lodash.debounce");
  * Supports both window scroll and scrollable divs inside other divs.
  */
 export default class ScrollViewer extends BaseScrollView {
-    
+
     public static defaultProps: Partial<BaseScrollViewProps> = {
         canChangeSize: false,
         horizontal: false,
-        style: null,
-        useWindowScroll: false,
+        style: null
     };
 
     private scrollEndEventSimulator = debounce((executable: () => void) => {
@@ -26,10 +25,7 @@ export default class ScrollViewer extends BaseScrollView {
 
     public componentDidMount(): void {
         if (this.props.onSizeChanged) {
-            if (this.props.useWindowScroll) {
-                this._startListeningToWindowEvents();
-                this.props.onSizeChanged({ height: window.innerHeight, width: window.innerWidth });
-            } else if (this._mainDivRef) {
+            if (this._mainDivRef) {
                 this._startListeningToDivEvents();
                 this.props.onSizeChanged({ height: this._mainDivRef.clientHeight, width: this._mainDivRef.clientWidth });
             }
@@ -41,7 +37,6 @@ export default class ScrollViewer extends BaseScrollView {
         if (this._mainDivRef) {
             this._mainDivRef.removeEventListener("scroll", this._onScroll);
         }
-        window.removeEventListener("resize", this._onWindowResize);
     }
 
     public scrollTo(scrollInput: { x: number, y: number, animated: boolean }): void {
@@ -53,8 +48,8 @@ export default class ScrollViewer extends BaseScrollView {
     }
 
     public render(): JSX.Element {
-        return !this.props.useWindowScroll
-            ? <div
+        return (
+            <div
                 ref={this._setDivRef}
                 style={{
                     WebkitOverflowScrolling: "touch",
@@ -69,11 +64,7 @@ export default class ScrollViewer extends BaseScrollView {
                     {this.props.children}
                 </div>
             </div>
-            : <div
-                ref={this._setDivRef}
-                style={{ position: "relative", ...this.props.style }}>
-                {this.props.children}
-            </div>;
+        );
     }
 
     private _setDivRef = (div: HTMLDivElement | null): void => {
@@ -86,38 +77,22 @@ export default class ScrollViewer extends BaseScrollView {
     }
 
     private _getRelevantOffset = (): number => {
-        if (!this.props.useWindowScroll) {
-            if (this._mainDivRef) {
-                if (this.props.horizontal) {
-                    return this._mainDivRef.scrollLeft;
-                } else {
-                    return this._mainDivRef.scrollTop;
-                }
-            }
-            return 0;
-        } else {
+        if (this._mainDivRef) {
             if (this.props.horizontal) {
-                return window.scrollX;
+                return this._mainDivRef.scrollLeft;
             } else {
-                return window.scrollY;
+                return this._mainDivRef.scrollTop;
             }
         }
+        return 0;
     }
 
     private _setRelevantOffset = (offset: number): void => {
-        if (!this.props.useWindowScroll) {
-            if (this._mainDivRef) {
-                if (this.props.horizontal) {
-                    this._mainDivRef.scrollLeft = offset;
-                } else {
-                    this._mainDivRef.scrollTop = offset;
-                }
-            }
-        } else {
+        if (this._mainDivRef) {
             if (this.props.horizontal) {
-                window.scrollTo(offset, 0);
+                this._mainDivRef.scrollLeft = offset;
             } else {
-                window.scrollTo(0, offset);
+                this._mainDivRef.scrollTop = offset;
             }
         }
     }
@@ -163,19 +138,6 @@ export default class ScrollViewer extends BaseScrollView {
     private _startListeningToDivEvents(): void {
         if (this._mainDivRef) {
             this._mainDivRef.addEventListener("scroll", this._onScroll);
-        }
-    }
-
-    private _startListeningToWindowEvents(): void {
-        window.addEventListener("scroll", this._windowOnScroll);
-        if (this.props.canChangeSize) {
-            window.addEventListener("resize", this._onWindowResize);
-        }
-    }
-
-    private _onWindowResize = (): void => {
-        if (this.props.onSizeChanged && this.props.useWindowScroll) {
-            this.props.onSizeChanged({ height: window.innerHeight, width: window.innerWidth });
         }
     }
 

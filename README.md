@@ -97,7 +97,6 @@ not be as fast.
 | scrollThrottle | No | number |iOS only; Scroll throttle duration |
 | canChangeSize | No | boolean | Specify if size can change |
 | distanceFromWindow | No | number | Web only; Specify how far away the first list item is from window top |
-| useWindowScroll | No | boolean | Web only; Layout Elements in window instead of a scrollable div |
 | disableRecycling | No | boolean | Turns off recycling |
 | forceNonDeterministicRendering | No | boolean | Default is false; if enabled dimensions provided in layout provider will not be strictly enforced. Use this if item dimensions cannot be accurately determined |
 | extendedState | No | object | In some cases the data passed at row level may not contain all the info that the item depends upon, you can keep all other info outside and pass it down via this prop. Changing this object will cause everything to re-render. Make sure you don't change it often to ensure performance. Re-renders are heavy. |

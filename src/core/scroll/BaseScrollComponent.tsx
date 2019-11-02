@@ -11,7 +11,6 @@ export interface ScrollComponentProps {
     externalScrollView?: { new(props: BaseScrollViewProps): BaseScrollView };
     isHorizontal?: boolean;
     scrollThrottle?: number;
-    useWindowScroll?: boolean;
     onLayout?: any;
 }
 export abstract class BaseScrollComponent extends React.Component<ScrollComponentProps, {}> {

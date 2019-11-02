@@ -45,7 +45,8 @@ export interface RecyclerListViewProps {
     dataProvider: DataProvider;
     rowRenderer: (index: number) => React.ReactNode;
     /**
-     * Used to maintain scroll position in case view gets destroyed e.g, cases of back navigation 
+     * Used to maintain scroll position in case view gets destroyed e.g, cases
+     * of back navigation 
      */
     contextProvider?: Map<string, string | number>;
     /**
@@ -58,9 +59,9 @@ export interface RecyclerListViewProps {
     isHorizontal?: boolean;
     onScroll?: (rawEvent: ScrollEvent, offsetX: number, offsetY: number) => void;
     /**
-     * callback onRecreate(params), when recreating recycler view from context
-     * provider. Gives you the initial params in the first frame itself to allow
-     * you to render content accordingly.
+     * Called when recreating recycler view from context provider. Gives you the
+     * initial params in the first frame itself to allow you to render content
+     * accordingly.
      */
     onRecreate?: (params: OnRecreateParams) => void;
     /**
@@ -100,7 +101,6 @@ export interface RecyclerListViewProps {
     scrollThrottle?: number;
     /**
      * Specify if size can change, listview will automatically relayout items.
-     * For web, works only with useWindowScroll = true
      */
     canChangeSize?: boolean;
     /**
@@ -114,10 +114,6 @@ export interface RecyclerListViewProps {
      * scrollToOffset please override the method and handle manually.
      */
     distanceFromWindow?: number;
-    /**
-     * Web only. Layout elements in window instead of a scrollable div.
-     */
-    useWindowScroll?: boolean;
     /**
      * Turns off recycling. You still get progressive rendering and all other
      * features. Good for lazy rendering. This should not be used in most cases.
