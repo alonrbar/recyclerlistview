@@ -6,6 +6,7 @@ import CustomError from '../exceptions/CustomError';
  * lists of visible/hidden item.
  */
 export abstract class LayoutManager {
+    
     public getOffsetForIndex(index: number): Point {
         const layouts = this.getLayouts();
         if (layouts.length > index) {

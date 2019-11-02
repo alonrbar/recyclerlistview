@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { Default, ObjectUtil } from 'ts-object-utils';
 import { Constants } from './constants/Constants';
-import { Messages } from './constants/Messages';
-import ContextProvider from './dependencies/ContextProvider';
 import { DataProvider } from './dependencies/DataProvider';
 import { BaseLayoutProvider, Dimension } from './dependencies/LayoutProvider';
 import CustomError from './exceptions/CustomError';
@@ -49,7 +47,7 @@ export interface RecyclerListViewProps {
     /**
      * Used to maintain scroll position in case view gets destroyed e.g, cases of back navigation 
      */
-    contextProvider?: ContextProvider;
+    contextProvider?: Map<string, string | number>;
     /**
      * Specify how many pixels in advance do you want views to be rendered.
      * Increasing this value can help reduce blanks (if any). However keeping
@@ -238,7 +236,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
             const offsets = layoutManager.getOffsetForIndex(index);
             this.scrollToOffset(offsets.x, offsets.y, animate);
         } else {
-            console.warn(Messages.WARN_SCROLL_TO_INDEX); //tslint:disable-line
+            console.warn("scrollTo was called before RecyclerListView was measured, please wait for the mount to finish."); //tslint:disable-line
         }
     }
 
@@ -318,7 +316,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
     // life cycle
     //
 
-    public componentWillReceiveProps(newProps: RecyclerListViewProps): void {
+    public UNSAFE_componentWillReceiveProps(newProps: RecyclerListViewProps): void {
         this._assertDependencyPresence(newProps);
         this._checkAndChangeLayouts(newProps);
         if (!this.props.onVisibleIndicesChanged) {
@@ -348,23 +346,26 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         this._processOnEndReached();
         this._checkAndChangeLayouts(this.props);
         if (this.props.dataProvider.getSize() === 0) {
-            console.warn(Messages.WARN_NO_DATA); //tslint:disable-line
+            console.warn(
+                "You have mounted RecyclerListView with an empty data provider (Size in 0). " +
+                "Please mount only if there is atleast one item " +
+                "to ensure optimal performance and to avoid unexpected behavior"
+            ); //tslint:disable-line
         }
     }
 
     public componentWillUnmount(): void {
         if (this.props.contextProvider) {
-            const uniqueKey = this.props.contextProvider.getUniqueKey();
-            if (uniqueKey) {
-                this.props.contextProvider.save(uniqueKey + Constants.CONTEXT_PROVIDER_OFFSET_KEY_SUFFIX, this.getCurrentScrollOffset());
-                if (this.props.forceNonDeterministicRendering) {
-                    if (this._virtualRenderer) {
-                        const layoutManager = this._virtualRenderer.getLayoutManager();
-                        if (layoutManager) {
-                            const layoutsToCache = layoutManager.getLayouts();
-                            this.props.contextProvider.save(uniqueKey + Constants.CONTEXT_PROVIDER_LAYOUT_KEY_SUFFIX,
-                                JSON.stringify({ layoutArray: layoutsToCache }));
-                        }
+            this.props.contextProvider.set(Constants.CONTEXT_PROVIDER_OFFSET_KEY_SUFFIX, this.getCurrentScrollOffset());
+            if (this.props.forceNonDeterministicRendering) {
+                if (this._virtualRenderer) {
+                    const layoutManager = this._virtualRenderer.getLayoutManager();
+                    if (layoutManager) {
+                        const layoutsToCache = layoutManager.getLayouts();
+                        this.props.contextProvider.set(
+                            Constants.CONTEXT_PROVIDER_LAYOUT_KEY_SUFFIX,
+                            JSON.stringify({ layoutArray: layoutsToCache })
+                        );
                     }
                 }
             }
@@ -373,22 +374,19 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
 
     public UNSAFE_componentWillMount(): void {
         if (this.props.contextProvider) {
-            const uniqueKey = this.props.contextProvider.getUniqueKey();
-            if (uniqueKey) {
-                const offset = this.props.contextProvider.get(uniqueKey + Constants.CONTEXT_PROVIDER_OFFSET_KEY_SUFFIX);
-                if (typeof offset === "number" && offset > 0) {
-                    this._initialOffset = offset;
-                    if (this.props.onRecreate) {
-                        this.props.onRecreate({ lastOffset: this._initialOffset });
-                    }
-                    this.props.contextProvider.remove(uniqueKey + Constants.CONTEXT_PROVIDER_OFFSET_KEY_SUFFIX);
+            const offset = this.props.contextProvider.get(Constants.CONTEXT_PROVIDER_OFFSET_KEY_SUFFIX);
+            if (typeof offset === "number" && offset > 0) {
+                this._initialOffset = offset;
+                if (this.props.onRecreate) {
+                    this.props.onRecreate({ lastOffset: this._initialOffset });
                 }
-                if (this.props.forceNonDeterministicRendering) {
-                    const cachedLayouts = this.props.contextProvider.get(uniqueKey + Constants.CONTEXT_PROVIDER_LAYOUT_KEY_SUFFIX) as string;
-                    if (cachedLayouts && typeof cachedLayouts === "string") {
-                        this._cachedLayouts = JSON.parse(cachedLayouts).layoutArray;
-                        this.props.contextProvider.remove(uniqueKey + Constants.CONTEXT_PROVIDER_LAYOUT_KEY_SUFFIX);
-                    }
+                this.props.contextProvider.delete(Constants.CONTEXT_PROVIDER_OFFSET_KEY_SUFFIX);
+            }
+            if (this.props.forceNonDeterministicRendering) {
+                const cachedLayouts = this.props.contextProvider.get(Constants.CONTEXT_PROVIDER_LAYOUT_KEY_SUFFIX) as string;
+                if (cachedLayouts && typeof cachedLayouts === "string") {
+                    this._cachedLayouts = JSON.parse(cachedLayouts).layoutArray;
+                    this.props.contextProvider.delete(Constants.CONTEXT_PROVIDER_LAYOUT_KEY_SUFFIX);
                 }
             }
         }
