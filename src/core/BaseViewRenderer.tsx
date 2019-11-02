@@ -8,14 +8,13 @@ export interface ViewRendererProps {
     y: number;
     height: number;
     width: number;
-    childRenderer: (index: number, extendedState?: object) => JSX.Element | JSX.Element[] | null;
+    childRenderer: (index: number) => React.ReactNode;
     hasDataChanged: (index: number) => boolean;
     onSizeChanged: (dim: Dimension, index: number) => void;
     index: number;
     itemAnimator: ItemAnimator;
     forceNonDeterministicRendering?: boolean;
     isHorizontal?: boolean;
-    extendedState?: object;
     internalSnapshot?: object;
     layoutProvider?: LayoutProvider;
 }
@@ -35,10 +34,9 @@ export default abstract class BaseViewRenderer extends React.Component<ViewRende
             (this.props.width !== newProps.width || this.props.height !== newProps.height) ||
             this.props.layoutProvider !== newProps.layoutProvider;
 
-        const hasExtendedStateChanged = this.props.extendedState !== newProps.extendedState;
         const hasInternalSnapshotChanged = this.props.internalSnapshot !== newProps.internalSnapshot;
         const hasDataChanged = this.props.hasDataChanged(this.props.index);
-        let shouldUpdate = hasSizeChanged || hasDataChanged || hasExtendedStateChanged || hasInternalSnapshotChanged;
+        let shouldUpdate = hasSizeChanged || hasDataChanged || hasInternalSnapshotChanged;
         if (shouldUpdate) {
             newProps.itemAnimator.animateWillUpdate(this.props.x, this.props.y, newProps.x, newProps.y, this.getRef() as object, newProps.index);
         } else if (hasMoved) {
@@ -53,7 +51,7 @@ export default abstract class BaseViewRenderer extends React.Component<ViewRende
 
     protected abstract getRef(): object | null;
 
-    protected renderChild(): JSX.Element | JSX.Element[] | null {
-        return this.props.childRenderer(this.props.index, this.props.extendedState);
+    protected renderChild(): React.ReactNode {
+        return this.props.childRenderer(this.props.index);
     }
 }

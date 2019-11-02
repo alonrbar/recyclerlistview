@@ -43,7 +43,7 @@ export interface OnRecreateParams {
 export interface RecyclerListViewProps {
     layoutProvider: LayoutProvider;
     dataProvider: DataProvider;
-    rowRenderer: (index: number, extendedState?: object) => JSX.Element | JSX.Element[] | null;
+    rowRenderer: (index: number) => React.ReactNode;
     /**
      * Used to maintain scroll position in case view gets destroyed e.g, cases of back navigation 
      */
@@ -134,14 +134,6 @@ export interface RecyclerListViewProps {
      * items. Slower if enabled.
      */
     forceNonDeterministicRendering?: boolean;
-    /**
-     * In some cases the data passed at row level may not contain all the info
-     * that the item depends upon, you can keep all other info outside and pass
-     * it down via this prop. Changing this object will cause everything to
-     * re-render. Make sure you don't change it often to ensure performance.
-     * Re-renders are heavy.
-     */
-    extendedState?: object;
     /**
      * Enables animating RecyclerListView item cells e.g, shift, add, remove
      * etc. This prop can be used to pass an external item animation
@@ -570,7 +562,6 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
                     height={itemRect.height}
                     width={itemRect.width}
                     itemAnimator={Default.value<ItemAnimator>(this.props.itemAnimator, this._defaultItemAnimator)}
-                    extendedState={this.props.extendedState}
                     internalSnapshot={this.state.internalSnapshot}
                 />
             );
