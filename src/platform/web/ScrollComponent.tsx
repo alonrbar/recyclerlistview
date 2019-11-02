@@ -35,7 +35,7 @@ export default class ScrollComponent extends BaseScrollComponent {
     }
 
     public render(): JSX.Element {
-        const Scroller = this.props.externalScrollView as any; //TSI
+        const Scroller = this.props.externalScrollView as any; // TSI
         return (
             <Scroller
                 ref={(scrollView: BaseScrollView) => this._scrollViewRef = scrollView as (BaseScrollView | null)}

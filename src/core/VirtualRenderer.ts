@@ -70,7 +70,24 @@ export default class VirtualRenderer {
         this.onVisibleItemsChanged = null;
     }
 
-    public getLayoutDimension(): Dimension {
+    //
+    // public methods
+    //
+
+    public init(): void {
+        this.getInitialOffset();
+        this._recyclePool = new RecycleItemPool();
+        if (this._params) {
+            this._viewabilityTracker = new ViewabilityTracker(
+                (this._params.renderAheadOffset || 0),
+                (this._params.initialOffset || 0));
+        } else {
+            this._viewabilityTracker = new ViewabilityTracker(0, 0);
+        }
+        this._prepareViewabilityTracker();
+    }
+
+    public getContentDimension(): Dimension {
         if (this._layoutManager) {
             return this._layoutManager.getContentDimension();
         }
@@ -168,20 +185,7 @@ export default class VirtualRenderer {
             }
         }
         return offset;
-    }
-
-    public init(): void {
-        this.getInitialOffset();
-        this._recyclePool = new RecycleItemPool();
-        if (this._params) {
-            this._viewabilityTracker = new ViewabilityTracker(
-                (this._params.renderAheadOffset || 0),
-                (this._params.initialOffset || 0));
-        } else {
-            this._viewabilityTracker = new ViewabilityTracker(0, 0);
-        }
-        this._prepareViewabilityTracker();
-    }
+    }    
 
     public startViewabilityTracker(): void {
         if (this._viewabilityTracker) {
@@ -190,8 +194,8 @@ export default class VirtualRenderer {
         }
     }
 
-    public syncAndGetKey(rowIndex: number, newRenderStack?: RenderStack): React.Key {
-        const renderStack = newRenderStack ? newRenderStack : this._renderStack;
+    public syncAndGetKey(rowIndex: number): React.Key {
+        const renderStack = this._renderStack;
         const stableIdItem = this._stableIdToRenderKeyMap[rowIndex];
         let key: React.Key = stableIdItem ? stableIdItem.key : undefined;
 
@@ -230,6 +234,10 @@ export default class VirtualRenderer {
         }
         return key;
     }
+
+    //
+    // private methods
+    //
 
     private _getCollisionAvoidingKey(): string {
         return "#" + this._startKey++ + "_rlv_c";

@@ -74,15 +74,6 @@ export interface RecyclerListViewProps {
      */
     onEndReachedThreshold?: number;
     /**
-     * Deprecated. Please use onVisibleIndicesChanged instead. 
-     */
-    onVisibleIndexesChanged?: TOnItemStatusChanged;
-    /**
-     * Provides visible index, helpful in sending impression events etc,
-     * onVisibleIndicesChanged(all, now, notNow)
-     */
-    onVisibleIndicesChanged?: TOnItemStatusChanged;
-    /**
      * Provide your own ScrollView Component. The contract for the scroll event
      * should match the native scroll event contract, i.e.:  
      *   scrollEvent = { nativeEvent: { contentOffset: { x: offset, y: offset } } }  
@@ -156,9 +147,9 @@ export interface RecyclerListViewState {
     renderForcer: object;
 }
 
-export default class RecyclerListView<P extends RecyclerListViewProps, S extends RecyclerListViewState> extends React.Component<P, S> {
+export class RecyclerListView extends React.Component<RecyclerListViewProps, RecyclerListViewState> {
 
-    public static defaultProps = {
+    public static defaultProps: Partial<RecyclerListViewProps> = {
         canChangeSize: false,
         disableRecycling: false,
         initialOffset: 0,
@@ -189,7 +180,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
     private _scrollComponent: BaseScrollComponent | null = null;
     private _defaultItemAnimator: ItemAnimator = new DefaultItemAnimator();
 
-    constructor(props: P, context?: any) {
+    constructor(props: RecyclerListViewProps, context?: any) {
         super(props, context);
 
         this._virtualRenderer = new VirtualRenderer(
@@ -201,7 +192,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         this.state = {
             renderForcer: {},
             renderStack: {},
-        } as S;
+        };
     }
 
     //
@@ -277,7 +268,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
     }
 
     public getContentDimension(): Dimension {
-        return this._virtualRenderer.getLayoutDimension();
+        return this._virtualRenderer.getContentDimension();
     }
 
     public forceRerender(): void {
@@ -292,15 +283,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
 
     public UNSAFE_componentWillReceiveProps(newProps: RecyclerListViewProps): void {
         this._checkAndChangeLayouts(newProps);
-        if (!this.props.onVisibleIndicesChanged) {
-            this._virtualRenderer.removeVisibleItemsListener();
-        }
-        if (this.props.onVisibleIndexesChanged) {
-            throw new CustomError(RecyclerListViewExceptions.usingOldVisibleIndexesChangedParam);
-        }
-        if (this.props.onVisibleIndicesChanged) {
-            this._virtualRenderer.attachVisibleItemsListener(this.props.onVisibleIndicesChanged!);
-        }
+        this._virtualRenderer.removeVisibleItemsListener();
     }
 
     public componentDidUpdate(): void {
@@ -377,8 +360,8 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
                 {...this.props.scrollViewProps}
                 onScroll={this._onScroll}
                 onSizeChanged={this._onSizeChanged}
-                contentHeight={this._initComplete ? this._virtualRenderer.getLayoutDimension().height : 0}
-                contentWidth={this._initComplete ? this._virtualRenderer.getLayoutDimension().width : 0}
+                contentHeight={this._initComplete ? this._virtualRenderer.getContentDimension().height : 0}
+                contentWidth={this._initComplete ? this._virtualRenderer.getContentDimension().width : 0}
             >
                 {this.renderRows()}
             </ScrollComponent>
@@ -396,33 +379,36 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
     }
 
     private renderRow(rowIndex: number): React.ReactNode {
-        const rowsCount = this.props.rowsCount;
-        if (!isNullOrUndefined(rowIndex) && rowIndex < rowsCount) {
-            const rowLayout = this._virtualRenderer.getLayoutManager().getLayouts()[rowIndex];
-            const key = this._virtualRenderer.syncAndGetKey(rowIndex);
-            if (!this.props.forceNonDeterministicRendering) {
-                this._checkExpectedDimensionDiscrepancy(rowLayout, rowIndex);
-            }
-            return (
-                <ViewRenderer
-                    key={key}                    
-                    index={rowIndex}
-                    x={rowLayout.x}
-                    y={rowLayout.y}
-                    height={rowLayout.height}
-                    width={rowLayout.width}
-                    hasDataChanged={this.props.hasRowChanged}
-                    layoutProvider={this.props.layoutProvider}
-                    forceNonDeterministicRendering={this.props.forceNonDeterministicRendering}
-                    isHorizontal={this.props.isHorizontal}
-                    onSizeChanged={this._onViewContainerSizeChange}
-                    childRenderer={this.props.rowRenderer}                    
-                    itemAnimator={this.props.itemAnimator || this._defaultItemAnimator}
-                    renderForcer={this.state.renderForcer}
-                />
-            );
+
+        if (isNullOrUndefined(rowIndex))
+            return null;
+
+        if (rowIndex >= this.props.rowsCount)
+            return null;
+
+        const rowLayout = this._virtualRenderer.getLayoutManager().getLayouts()[rowIndex];
+        const key = this._virtualRenderer.syncAndGetKey(rowIndex);
+        if (!this.props.forceNonDeterministicRendering) {
+            this._checkExpectedDimensionDiscrepancy(rowLayout, rowIndex);
         }
-        return null;
+        return (
+            <ViewRenderer
+                key={key}
+                index={rowIndex}
+                x={rowLayout.x}
+                y={rowLayout.y}
+                height={rowLayout.height}
+                width={rowLayout.width}
+                hasDataChanged={this.props.hasRowChanged}
+                layoutProvider={this.props.layoutProvider}
+                forceNonDeterministicRendering={this.props.forceNonDeterministicRendering}
+                isHorizontal={this.props.isHorizontal}
+                onSizeChanged={this._onViewContainerSizeChange}
+                childRenderer={this.props.rowRenderer}
+                itemAnimator={this.props.itemAnimator || this._defaultItemAnimator}
+                renderForcer={this.state.renderForcer}
+            />
+        );
     }
 
     //
@@ -506,12 +492,6 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
     }
 
     private _initTrackers(): void {
-        if (this.props.onVisibleIndexesChanged) {
-            throw new CustomError(RecyclerListViewExceptions.usingOldVisibleIndexesChangedParam);
-        }
-        if (this.props.onVisibleIndicesChanged) {
-            this._virtualRenderer.attachVisibleItemsListener(this.props.onVisibleIndicesChanged!);
-        }
         this._params = {
             initialOffset: this._initialOffset ? this._initialOffset : this.props.initialOffset,
             initialRenderIndex: this.props.initialRenderIndex,
@@ -557,7 +537,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
                 this._relayoutReqIndex = Math.min(this._relayoutReqIndex, index);
             }
         }
-    }    
+    }
 
     private _onScroll = (offsetX: number, offsetY: number, rawEvent: ScrollEvent): void => {
         //Adjusting offsets using distanceFromWindow
@@ -571,7 +551,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
 
     private _processOnEndReached(): void {
         if (this.props.onEndReached && this._virtualRenderer) {
-            const layout = this._virtualRenderer.getLayoutDimension();
+            const layout = this._virtualRenderer.getContentDimension();
             const viewabilityTracker = this._virtualRenderer.getViewabilityTracker();
             if (viewabilityTracker) {
                 const windowBound = this.props.isHorizontal ? layout.width - this._layout.width : layout.height - this._layout.height;
