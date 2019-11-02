@@ -10,7 +10,6 @@ export interface ScrollComponentProps {
     canChangeSize?: boolean;
     externalScrollView?: { new(props: BaseScrollViewProps): BaseScrollView };
     isHorizontal?: boolean;
-    renderFooter?: () => JSX.Element | JSX.Element[] | null;
     scrollThrottle?: number;
     useWindowScroll?: boolean;
     onLayout?: any;

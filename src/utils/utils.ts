@@ -1,5 +1,5 @@
 
-export function isNullOrUndefined(val: any): boolean {
+export function isNullOrUndefined(val: unknown): boolean {
     return val === null || val === undefined;
 }
 

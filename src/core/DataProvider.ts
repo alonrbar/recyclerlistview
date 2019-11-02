@@ -1,4 +1,4 @@
-import { ObjectUtil } from "ts-object-utils";
+import { isNullOrUndefined } from '../utils';
 
 /***
  * You can create a new instance or inherit and override default methods
@@ -33,7 +33,7 @@ export class DataProvider {
         const dp = new DataProvider(this.hasRowChanged);
         const newSize = newData.length;
         const iterCount = Math.min(this._size, newSize);
-        if (ObjectUtil.isNullOrUndefined(firstModifiedIndex)) {
+        if (isNullOrUndefined(firstModifiedIndex)) {
             let i = 0;
             for (i = 0; i < iterCount; i++) {
                 if (this.hasRowChanged(i)) {

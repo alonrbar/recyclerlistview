@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Default, ObjectUtil } from 'ts-object-utils';
+import { isNullOrUndefined } from '../utils';
 import { Constants } from './constants/Constants';
 import { DataProvider } from './DataProvider';
 import { LayoutProvider, Dimension } from './LayoutProvider';
@@ -80,12 +80,7 @@ export interface RecyclerListViewProps {
      * Provides visible index, helpful in sending impression events etc,
      * onVisibleIndicesChanged(all, now, notNow)
      */
-    onVisibleIndicesChanged?: TOnItemStatusChanged;
-    /**
-     * Provide this method if you want to render a footer. Helpful in showing a
-     * loader while doing incremental loads.
-     */
-    renderFooter?: () => JSX.Element | JSX.Element[] | null;
+    onVisibleIndicesChanged?: TOnItemStatusChanged;    
     /**
      * Provide your own ScrollView Component. The contract for the scroll event
      * should match the native scroll event contract, i.e.:  
@@ -541,7 +536,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
 
     private _renderRowUsingMeta(rowIndex: number): JSX.Element | null {
         const dataSize = this.props.dataProvider.getSize();
-        if (!ObjectUtil.isNullOrUndefined(rowIndex) && rowIndex < dataSize) {
+        if (!isNullOrUndefined(rowIndex) && rowIndex < dataSize) {
             const itemRect = (this._virtualRenderer.getLayoutManager() as LayoutManager).getLayouts()[rowIndex];
             const key = this._virtualRenderer.syncAndGetKey(rowIndex);
             if (!this.props.forceNonDeterministicRendering) {
@@ -561,7 +556,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
                     childRenderer={this.props.rowRenderer}
                     height={itemRect.height}
                     width={itemRect.width}
-                    itemAnimator={Default.value<ItemAnimator>(this.props.itemAnimator, this._defaultItemAnimator)}
+                    itemAnimator={this.props.itemAnimator || this._defaultItemAnimator}
                     internalSnapshot={this.state.internalSnapshot}
                 />
             );
@@ -621,7 +616,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
             if (viewabilityTracker) {
                 const windowBound = this.props.isHorizontal ? layout.width - this._layout.width : layout.height - this._layout.height;
                 const lastOffset = viewabilityTracker ? viewabilityTracker.getLastOffset() : 0;
-                if (windowBound - lastOffset <= Default.value<number>(this.props.onEndReachedThreshold, 0)) {
+                if (windowBound - lastOffset <= (this.props.onEndReachedThreshold || 0)) {
                     if (this.props.onEndReached && !this._onEndReachedCalled) {
                         this._onEndReachedCalled = true;
                         this.props.onEndReached();

@@ -1,12 +1,12 @@
-import RecycleItemPool from "../utils/RecycleItemPool";
-import { Dimension } from "./LayoutProvider";
-import CustomError from "./exceptions/CustomError";
-import RecyclerListViewExceptions from "./exceptions/RecyclerListViewExceptions";
-import { Point, LayoutManager } from "./LayoutManager";
-import ViewabilityTracker, { TOnItemStatusChanged } from "./ViewabilityTracker";
-import { ObjectUtil, Default } from "ts-object-utils";
-import TSCast from "../utils/TSCast";
-import { DataProvider } from "./DataProvider";
+import { isNullOrUndefined } from '../utils';
+import RecycleItemPool from '../utils/RecycleItemPool';
+import TSCast from '../utils/TSCast';
+import { DataProvider } from './DataProvider';
+import CustomError from './exceptions/CustomError';
+import RecyclerListViewExceptions from './exceptions/RecyclerListViewExceptions';
+import { LayoutManager, Point } from './LayoutManager';
+import { Dimension } from './LayoutProvider';
+import ViewabilityTracker, { TOnItemStatusChanged } from './ViewabilityTracker';
 
 export interface StableIdMapItem {
     key: React.Key;
@@ -154,16 +154,16 @@ export default class VirtualRenderer {
     public getInitialOffset(): Point {
         let offset = { x: 0, y: 0 };
         if (this._params) {
-            const initialRenderIndex = Default.value<number>(this._params.initialRenderIndex, 0);
+            const initialRenderIndex = (this._params.initialRenderIndex || 0);
             if (initialRenderIndex > 0 && this._layoutManager) {
                 offset = this._layoutManager.getOffsetForIndex(initialRenderIndex);
                 this._params.initialOffset = this._params.isHorizontal ? offset.x : offset.y;
             } else {
                 if (this._params.isHorizontal) {
-                    offset.x = Default.value<number>(this._params.initialOffset, 0);
+                    offset.x = (this._params.initialOffset || 0);
                     offset.y = 0;
                 } else {
-                    offset.y = Default.value<number>(this._params.initialOffset, 0);
+                    offset.y = (this._params.initialOffset || 0);
                     offset.x = 0;
                 }
             }
@@ -176,8 +176,8 @@ export default class VirtualRenderer {
         this._recyclePool = new RecycleItemPool();
         if (this._params) {
             this._viewabilityTracker = new ViewabilityTracker(
-                Default.value<number>(this._params.renderAheadOffset, 0),
-                Default.value<number>(this._params.initialOffset, 0));
+                (this._params.renderAheadOffset || 0),
+                (this._params.initialOffset || 0));
         } else {
             this._viewabilityTracker = new ViewabilityTracker(0, 0);
         }
@@ -196,13 +196,13 @@ export default class VirtualRenderer {
         const stableIdItem = this._stableIdToRenderKeyMap[rowIndex];
         let key: React.Key = stableIdItem ? stableIdItem.key : undefined;
 
-        if (ObjectUtil.isNullOrUndefined(key)) {
+        if (isNullOrUndefined(key)) {
             key = this._recyclePool.getNext();
-            if (!ObjectUtil.isNullOrUndefined(key)) {
+            if (!isNullOrUndefined(key)) {
                 const oldIndex = renderStack[key];
                 if (oldIndex !== null && oldIndex !== undefined) {
                     renderStack[key] = rowIndex;
-                    if (!ObjectUtil.isNullOrUndefined(oldIndex) && oldIndex !== rowIndex) {
+                    if (!isNullOrUndefined(oldIndex) && oldIndex !== rowIndex) {
                         delete this._stableIdToRenderKeyMap[oldIndex];
                     }
                 } else {
@@ -221,7 +221,7 @@ export default class VirtualRenderer {
             this._markDirty = true;
             this._stableIdToRenderKeyMap[rowIndex] = { key };
         }
-        if (!ObjectUtil.isNullOrUndefined(this._engagedIndexes[rowIndex])) {
+        if (!isNullOrUndefined(this._engagedIndexes[rowIndex])) {
             this._recyclePool.remove(key);
         }
         const indexToCompare = renderStack[key];
@@ -242,7 +242,7 @@ export default class VirtualRenderer {
         for (const key in this._renderStack) {
             if (this._renderStack.hasOwnProperty(key)) {
                 const index = this._renderStack[key];
-                if (!ObjectUtil.isNullOrUndefined(index)) {
+                if (!isNullOrUndefined(index)) {
                     if (index <= maxIndex) {
                         const stableId = index;
                         activeStableIds[stableId] = 1;
@@ -270,7 +270,7 @@ export default class VirtualRenderer {
         for (const key in this._renderStack) {
             if (this._renderStack.hasOwnProperty(key)) {
                 const index = this._renderStack[key];
-                if (!ObjectUtil.isNullOrUndefined(index)) {
+                if (!isNullOrUndefined(index)) {
                     if (index <= maxIndex) {
                         const newKey = this.syncAndGetKey(index, newRenderStack);
                         const newStackItem = newRenderStack[newKey];
@@ -293,7 +293,7 @@ export default class VirtualRenderer {
         for (const key in this._renderStack) {
             if (this._renderStack.hasOwnProperty(key)) {
                 const index = this._renderStack[key];
-                if (!ObjectUtil.isNullOrUndefined(index) && ObjectUtil.isNullOrUndefined(this._engagedIndexes[index])) {
+                if (!isNullOrUndefined(index) && isNullOrUndefined(this._engagedIndexes[index])) {
                     this._recyclePool.add(key);
                 }
             }
@@ -316,7 +316,7 @@ export default class VirtualRenderer {
             this._viewabilityTracker.setDimensions({
                 height: this._dimensions.height,
                 width: this._dimensions.width,
-            }, Default.value<boolean>(this._params.isHorizontal, false));
+            }, this._params.isHorizontal);
         } else {
             throw new CustomError(RecyclerListViewExceptions.initializationException);
         }
@@ -341,7 +341,7 @@ export default class VirtualRenderer {
                     // recycle pool, the pool only needs to maintain keys since
                     // react can link a view to a key automatically
                     resolvedKey = this._stableIdToRenderKeyMap[disengagedIndex];
-                    if (!ObjectUtil.isNullOrUndefined(resolvedKey)) {
+                    if (!isNullOrUndefined(resolvedKey)) {
                         this._recyclePool.add(resolvedKey.key);
                     }
                 }

@@ -46,7 +46,6 @@ export default class ScrollComponent extends BaseScrollComponent {
         //     contentWidth,
         //     externalScrollView,
         //     canChangeSize,
-        //     renderFooter,
         //     isHorizontal,
         //     scrollThrottle,
         //     ...props,
@@ -66,7 +65,6 @@ export default class ScrollComponent extends BaseScrollComponent {
                     }}>
                         {this.props.children}
                     </View>
-                    {this.props.renderFooter ? this.props.renderFooter() : null}
                 </View>
             </Scroller>
         );
