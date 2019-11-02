@@ -1,4 +1,3 @@
-import { DataProvider } from "./core/DataProvider";
 import { LayoutProvider, Dimension } from "./core/LayoutProvider";
 import RecyclerListView, { OnRecreateParams } from "./core/RecyclerListView";
 import { BaseScrollView } from "./core/scroll/BaseScrollView";
@@ -7,7 +6,6 @@ import { Layout, LayoutManager, Point, WrapGridLayoutManager } from "./core/Layo
 // import ProgressiveListView from "./core/ProgressiveListView";
 
 export {
-    DataProvider,
     LayoutProvider,
     LayoutManager,
     WrapGridLayoutManager,

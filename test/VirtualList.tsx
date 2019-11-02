@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DataProvider, LayoutProvider, RecyclerListView } from '../src';
+import { LayoutProvider, RecyclerListView } from '../src';
 import { range } from '../src/utils';
 import { List, ListProps } from './List';
 
@@ -25,11 +25,6 @@ export class VirtualList extends React.PureComponent<ListProps> implements List 
 
     public render() {
 
-        // Create the data provider and provide method which takes in two rows
-        // of data and return if those two are different or not.
-        let dataProvider = new DataProvider(() => false);
-        dataProvider = dataProvider.cloneWithRows(range(this.props.itemCount));
-
         const layoutProvider = new LayoutProvider(
             (dim, index) => {
                 dim.width = this.isHorizontal ? this.props.itemSize(index) : this.props.width;
@@ -46,8 +41,9 @@ export class VirtualList extends React.PureComponent<ListProps> implements List 
                     height: this.props.height
                 }, this.props.style)}
                 isHorizontal={this.isHorizontal}
+                rowsCount={this.props.itemCount}
+                hasRowChanged={(rowIndex: number) => false}
                 layoutProvider={layoutProvider}
-                dataProvider={dataProvider}
                 rowRenderer={this.rowRenderer}
                 renderAheadOffset={this.props.overscan}
             />

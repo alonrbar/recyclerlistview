@@ -15,7 +15,7 @@ export interface ViewRendererProps {
     itemAnimator: ItemAnimator;
     forceNonDeterministicRendering?: boolean;
     isHorizontal?: boolean;
-    internalSnapshot?: object;
+    renderForcer?: object;
     layoutProvider?: LayoutProvider;
 }
 
@@ -33,10 +33,10 @@ export default abstract class BaseViewRenderer extends React.Component<ViewRende
         const hasSizeChanged = !newProps.forceNonDeterministicRendering &&
             (this.props.width !== newProps.width || this.props.height !== newProps.height) ||
             this.props.layoutProvider !== newProps.layoutProvider;
-
-        const hasInternalSnapshotChanged = this.props.internalSnapshot !== newProps.internalSnapshot;
         const hasDataChanged = this.props.hasDataChanged(this.props.index);
-        let shouldUpdate = hasSizeChanged || hasDataChanged || hasInternalSnapshotChanged;
+        const shouldForceRender = this.props.renderForcer !== newProps.renderForcer;
+        
+        let shouldUpdate = hasSizeChanged || hasDataChanged || shouldForceRender;
         if (shouldUpdate) {
             newProps.itemAnimator.animateWillUpdate(this.props.x, this.props.y, newProps.x, newProps.y, this.getRef() as object, newProps.index);
         } else if (hasMoved) {
@@ -44,7 +44,7 @@ export default abstract class BaseViewRenderer extends React.Component<ViewRende
         }
         return shouldUpdate;
     }
-    
+
     public componentWillUnmount(): void {
         this.props.itemAnimator.animateWillUnmount(this.props.x, this.props.y, this.getRef() as object, this.props.index);
     }

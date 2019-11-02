@@ -1,7 +1,6 @@
 import { isNullOrUndefined } from '../utils';
 import RecycleItemPool from '../utils/RecycleItemPool';
 import TSCast from '../utils/TSCast';
-import { DataProvider } from './DataProvider';
 import CustomError from './exceptions/CustomError';
 import RecyclerListViewExceptions from './exceptions/RecyclerListViewExceptions';
 import { LayoutManager, Point } from './LayoutManager';
@@ -230,74 +229,6 @@ export default class VirtualRenderer {
             console.warn("Possible stableId collision @", rowIndex); //tslint:disable-line
         }
         return key;
-    }
-
-    //Further optimize in later revision, pretty fast for now considering this is a low frequency event
-    public handleDataSetChange(newDataProvider: DataProvider, shouldOptimizeForAnimations?: boolean): void {
-        const maxIndex = newDataProvider.getSize() - 1;
-        const activeStableIds: { [key: string]: number } = {};
-        const newRenderStack: RenderStack = {};
-
-        //Compute active stable ids and stale active keys and resync render stack
-        for (const key in this._renderStack) {
-            if (this._renderStack.hasOwnProperty(key)) {
-                const index = this._renderStack[key];
-                if (!isNullOrUndefined(index)) {
-                    if (index <= maxIndex) {
-                        const stableId = index;
-                        activeStableIds[stableId] = 1;
-                    }
-                }
-            }
-        }
-
-        //Clean stable id to key map
-        const oldActiveStableIds = Object.keys(this._stableIdToRenderKeyMap);
-        const oldActiveStableIdsCount = oldActiveStableIds.length;
-        for (let i = 0; i < oldActiveStableIdsCount; i++) {
-            const key = oldActiveStableIds[i];
-            if (!activeStableIds[key]) {
-                if (!shouldOptimizeForAnimations && this._isRecyclingEnabled) {
-                    const stableIdItem = this._stableIdToRenderKeyMap[key];
-                    if (stableIdItem) {
-                        this._recyclePool.add(stableIdItem.key);
-                    }
-                }
-                delete this._stableIdToRenderKeyMap[key];
-            }
-        }
-
-        for (const key in this._renderStack) {
-            if (this._renderStack.hasOwnProperty(key)) {
-                const index = this._renderStack[key];
-                if (!isNullOrUndefined(index)) {
-                    if (index <= maxIndex) {
-                        const newKey = this.syncAndGetKey(index, newRenderStack);
-                        const newStackItem = newRenderStack[newKey];
-                        if (!newStackItem) {
-                            newRenderStack[newKey] = index;
-                        } else if (newStackItem !== index) {
-                            const cllKey = this._getCollisionAvoidingKey();
-                            newRenderStack[cllKey] = index;
-                            this._stableIdToRenderKeyMap[index] = {
-                                key: cllKey
-                            };
-                        }
-                    }
-                }
-                delete this._renderStack[key];
-            }
-        }
-        Object.assign(this._renderStack, newRenderStack);
-
-        for (const key in this._renderStack) {
-            if (this._renderStack.hasOwnProperty(key)) {
-                const index = this._renderStack[key];
-                if (!isNullOrUndefined(index) && isNullOrUndefined(this._engagedIndexes[index])) {
-                    this._recyclePool.add(key);
-                }
-            }
-        }
     }
 
     private _getCollisionAvoidingKey(): string {
