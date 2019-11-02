@@ -8,7 +8,7 @@ import ItemAnimator from './ItemAnimator';
 import { Layout, LayoutManager, Point } from './LayoutManager';
 import { BaseScrollComponent } from './scroll/BaseScrollComponent';
 import { BaseScrollView, BaseScrollViewProps, ScrollEvent } from './scroll/BaseScrollView';
-import { VirtualRenderer, RenderStack, RenderStackParams } from './VirtualRenderer';
+import { VirtualRenderer, ItemsToRender, RenderStackParams } from './VirtualRenderer';
 const debounce = require("lodash.debounce");
 
 //#if [REACT-NATIVE]
@@ -142,7 +142,7 @@ export interface RecyclerListViewProps {
 }
 
 export interface RecyclerListViewState {
-    renderStack: RenderStack;
+    itemsToRender: ItemsToRender;
     renderForcer: object;
 }
 
@@ -183,14 +183,14 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
         super(props, context);
 
         this._virtualRenderer = new VirtualRenderer(
-            this._renderStackWhenReady,
+            this.updateItemsToRender,
             offset => { this._pendingScrollToOffset = offset; },
             !props.disableRecycling
         );
 
         this.state = {
             renderForcer: {},
-            renderStack: {},
+            itemsToRender: {},
         };
     }
 
@@ -368,8 +368,8 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
 
     private renderRows(): React.ReactNode[] {
         const rows = [];
-        for (const key of Object.keys(this.state.renderStack)) {
-            const rowIndex = this.state.renderStack[key];
+        for (const key of Object.keys(this.state.itemsToRender)) {
+            const rowIndex = this.state.itemsToRender[key];
             const row = this.renderRow(rowIndex);
             rows.push(row);
         }
@@ -483,10 +483,8 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
         }
     }
 
-    private _renderStackWhenReady = (stack: RenderStack): void => {
-        this.setState(() => {
-            return { renderStack: stack };
-        });
+    private updateItemsToRender = (itemsToRender: ItemsToRender): void => {
+        this.setState({ itemsToRender });
     }
 
     private _initTrackers(): void {

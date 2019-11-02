@@ -10,7 +10,7 @@ import { ViewabilityTracker } from './ViewabilityTracker';
 export interface StableIdMapItem {
     key: React.Key;
 }
-export interface RenderStack { [key: string]: number; }
+export interface ItemsToRender { [key: string]: number; }
 
 export interface RenderStackParams {
     isHorizontal?: boolean;
@@ -28,10 +28,17 @@ export interface RenderStackParams {
 export class VirtualRenderer {
 
     private _scrollOnNextUpdate: (point: Point) => void;
+    /**
+     * Keeps track of keys of all the currently rendered indexes, can eventually
+     * replace renderStack as well if no new use cases come up
+     */
     private _stableIdToRenderKeyMap: { [key: string]: StableIdMapItem };
     private _engagedIndexes: { [key: number]: number };
-    private _renderStack: RenderStack;
-    private _renderStackChanged: (renderStack: RenderStack) => void;
+    /**
+     * Keeps track of items that need to be rendered in the next render cycle
+     */
+    private itemsToRender: ItemsToRender;
+    private onRenderItems: (itemsToRender: ItemsToRender) => void;
     private _isRecyclingEnabled: boolean;
     private _isViewTrackerRunning: boolean;
     private _markDirty: boolean;
@@ -43,18 +50,17 @@ export class VirtualRenderer {
     private _dimensions: Dimension | null;
 
     constructor(
-        renderStackChanged: (renderStack: RenderStack) => void,
+        onRenderItems: (itemsToRender: ItemsToRender) => void,
         scrollOnNextUpdate: (point: Point) => void,
         isRecyclingEnabled: boolean
     ) {
-        //Keeps track of items that need to be rendered in the next render cycle
-        this._renderStack = {};
+        
+        this.onRenderItems = onRenderItems;
+        this._scrollOnNextUpdate = scrollOnNextUpdate;
+        this.itemsToRender = {};
 
-        //Keeps track of keys of all the currently rendered indexes, can eventually replace renderStack as well if no new use cases come up
         this._stableIdToRenderKeyMap = {};
         this._engagedIndexes = {};
-        this._renderStackChanged = renderStackChanged;
-        this._scrollOnNextUpdate = scrollOnNextUpdate;
         this._dimensions = null;
         this._params = null;
         this._isRecyclingEnabled = isRecyclingEnabled;
@@ -62,7 +68,7 @@ export class VirtualRenderer {
         this._isViewTrackerRunning = false;
         this._markDirty = false;
 
-        //Would be surprised if someone exceeds this
+        // Would be surprised if someone exceeds this
         this._startKey = 0;
     }
 
@@ -179,31 +185,30 @@ export class VirtualRenderer {
     }
 
     public syncAndGetKey(rowIndex: number): React.Key {
-        const renderStack = this._renderStack;
         const stableIdItem = this._stableIdToRenderKeyMap[rowIndex];
         let key: React.Key = stableIdItem ? stableIdItem.key : undefined;
 
         if (isNullOrUndefined(key)) {
             key = this._recyclePool.getNext();
             if (!isNullOrUndefined(key)) {
-                const oldIndex = renderStack[key];
+                const oldIndex = this.itemsToRender[key];
                 if (oldIndex !== null && oldIndex !== undefined) {
-                    renderStack[key] = rowIndex;
+                    this.itemsToRender[key] = rowIndex;
                     if (!isNullOrUndefined(oldIndex) && oldIndex !== rowIndex) {
                         delete this._stableIdToRenderKeyMap[oldIndex];
                     }
                 } else {
-                    renderStack[key] = rowIndex;
+                    this.itemsToRender[key] = rowIndex;
                 }
             } else {
                 key = rowIndex;
-                if (renderStack[key]) {
+                if (this.itemsToRender[key]) {
                     //Probable collision, warn and avoid
                     //TODO: Disabled incorrectly triggering in some cases
                     //console.warn("Possible stableId collision @", index); //tslint:disable-line
                     key = this._getCollisionAvoidingKey();
                 }
-                renderStack[key] = rowIndex;
+                this.itemsToRender[key] = rowIndex;
             }
             this._markDirty = true;
             this._stableIdToRenderKeyMap[rowIndex] = { key };
@@ -211,7 +216,7 @@ export class VirtualRenderer {
         if (!isNullOrUndefined(this._engagedIndexes[rowIndex])) {
             this._recyclePool.remove(key);
         }
-        const indexToCompare = renderStack[key];
+        const indexToCompare = this.itemsToRender[key];
         if (indexToCompare !== undefined && indexToCompare !== rowIndex) {
             // Probable collision, warn
             console.warn("Possible stableId collision @", rowIndex); //tslint:disable-line
@@ -262,8 +267,8 @@ export class VirtualRenderer {
             }
         }
         if (this._updateRenderStack(now)) {
-            //Ask Recycler View to update itself
-            this._renderStackChanged(this._renderStack);
+            // Ask Recycler View to update itself
+            this.onRenderItems(this.itemsToRender);
         }
     }
 
