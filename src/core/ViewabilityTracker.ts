@@ -1,6 +1,14 @@
 import BinarySearch from "../utils/BinarySearch";
 import { Dimension } from "./LayoutProvider";
 import { Layout } from "./LayoutManager";
+
+export interface Range {
+    start: number;
+    end: number;
+}
+
+export type TOnItemStatusChanged = ((all: number[], now: number[], notNow: number[]) => void);
+
 /***
  * Given an offset this utility can compute visible items. Also tracks previously visible items to compute items which get hidden or visible
  * Virtual renderer uses callbacks from this utility to main recycle pool and the render stack.
@@ -8,12 +16,6 @@ import { Layout } from "./LayoutManager";
  * We use binary search to optimize in most cases like while finding first visible item or initial offset. In future we'll also be using BS to speed up
  * scroll to offset.
  */
-export interface Range {
-    start: number;
-    end: number;
-}
-export type TOnItemStatusChanged = ((all: number[], now: number[], notNow: number[]) => void);
-
 export default class ViewabilityTracker {
     public onVisibleRowsChanged: TOnItemStatusChanged | null;
     public onEngagedRowsChanged: TOnItemStatusChanged | null;
