@@ -13,7 +13,6 @@ export interface ViewRendererProps {
     onSizeChanged: (dim: Dimension, index: number) => void;
     index: number;
     itemAnimator: ItemAnimator;
-    styleOverrides?: object;
     forceNonDeterministicRendering?: boolean;
     isHorizontal?: boolean;
     extendedState?: object;
@@ -28,8 +27,6 @@ export interface ViewRendererProps {
  * This is second of the two things recycler works on. Implemented both for web and react native.
  */
 export default abstract class BaseViewRenderer extends React.Component<ViewRendererProps, {}> {
-
-    protected animatorStyleOverrides: object | undefined;
 
     public shouldComponentUpdate(newProps: ViewRendererProps): boolean {
         const hasMoved = this.props.x !== newProps.x || this.props.y !== newProps.y;
@@ -50,15 +47,6 @@ export default abstract class BaseViewRenderer extends React.Component<ViewRende
         return shouldUpdate;
     }
     
-    public componentDidMount(): void {
-        this.animatorStyleOverrides = undefined;
-        this.props.itemAnimator.animateDidMount(this.props.x, this.props.y, this.getRef() as object, this.props.index);
-    }
-
-    public UNSAFE_componentWillMount(): void {
-        this.animatorStyleOverrides = this.props.itemAnimator.animateWillMount(this.props.x, this.props.y, this.props.index);
-    }
-
     public componentWillUnmount(): void {
         this.props.itemAnimator.animateWillUnmount(this.props.x, this.props.y, this.getRef() as object, this.props.index);
     }

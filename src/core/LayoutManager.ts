@@ -20,11 +20,6 @@ export abstract class LayoutManager {
         }
     }
 
-    //You can ovveride this incase you want to override style in some cases e.g, say you want to enfore width but not height
-    public getStyleOverridesForIndex(index: number): object | undefined {
-        return undefined;
-    }
-
     //Return the dimension of entire content inside the list
     public abstract getContentDimension(): Dimension;
 

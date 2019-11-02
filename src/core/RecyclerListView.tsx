@@ -441,7 +441,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         this._virtualRenderer.setParamsAndDimensions(this._params, this._layout);
         this._virtualRenderer.setLayoutProvider(newProps.layoutProvider);
         if (forceFullRender || this.props.layoutProvider !== newProps.layoutProvider || this.props.isHorizontal !== newProps.isHorizontal) {
-            //TODO:Talha use old layout manager
+            // TODO: Talha use old layout manager
             this._virtualRenderer.setLayoutManager(newProps.layoutProvider.newLayoutManager(this._layout, newProps.isHorizontal));
             if (newProps.layoutProvider.shouldRefreshWithAnchoring) {
                 this._virtualRenderer.refreshWithAnchor();
@@ -554,7 +554,6 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         if (!ObjectUtil.isNullOrUndefined(rowIndex) && rowIndex < dataSize) {
             const itemRect = (this._virtualRenderer.getLayoutManager() as LayoutManager).getLayouts()[rowIndex];
             const key = this._virtualRenderer.syncAndGetKey(rowIndex);
-            const styleOverrides = (this._virtualRenderer.getLayoutManager() as LayoutManager).getStyleOverridesForIndex(rowIndex);
             if (!this.props.forceNonDeterministicRendering) {
                 this._checkExpectedDimensionDiscrepancy(itemRect, rowIndex);
             }
@@ -565,7 +564,6 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
                     x={itemRect.x}
                     y={itemRect.y}
                     index={rowIndex}
-                    styleOverrides={styleOverrides}
                     layoutProvider={this.props.layoutProvider}
                     forceNonDeterministicRendering={this.props.forceNonDeterministicRendering}
                     isHorizontal={this.props.isHorizontal}

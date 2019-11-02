@@ -1,19 +1,13 @@
 import { BaseItemAnimator } from "../../core/ItemAnimator";
 
 /**
- * Default implementation of RLV layout animations for web. We simply hook in transform transitions to beautifully animate all
- * shift events.
+ * Default implementation of RLV layout animations for web. We simply hook in
+ * transform transitions to beautifully animate all shift events.
  */
 export class DefaultWebItemAnimator implements BaseItemAnimator {
     public shouldAnimateOnce: boolean = true;
     private _hasAnimatedOnce: boolean = false;
     private _isTimerOn: boolean = false;
-    public animateWillMount(atX: number, atY: number, itemIndex: number): object | undefined {
-        return undefined;
-    }
-    public animateDidMount(atX: number, atY: number, itemRef: object, itemIndex: number): void {
-        //no need
-    }
 
     public animateWillUpdate(fromX: number, fromY: number, toX: number, toY: number, itemRef: object, itemIndex: number): void {
         this._hasAnimatedOnce = true;

@@ -20,7 +20,7 @@ export class LayoutProvider {
     /**
      * Return your layout manager, you get all required dependencies here. Also,
      * make sure to use cachedLayouts. RLV might cache layouts and give back to
-     * in cases of conxtext preservation. Make sure you use them if provided.
+     * in cases of context preservation. Make sure you use them if provided.
      */
     public newLayoutManager(renderWindowSize: Dimension, isHorizontal?: boolean, cachedLayouts?: Layout[]): LayoutManager {
         this._lastLayoutManager = new WrapGridLayoutManager(this, renderWindowSize, isHorizontal, cachedLayouts);

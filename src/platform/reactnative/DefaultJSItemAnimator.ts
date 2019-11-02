@@ -17,12 +17,6 @@ export class DefaultJSItemAnimator implements BaseItemAnimator {
     public shouldAnimateOnce: boolean = true;
     private _hasAnimatedOnce: boolean = false;
     private _isTimerOn: boolean = false;
-    public animateWillMount(atX: number, atY: number, itemIndex: number): object | undefined {
-        return undefined;
-    }
-    public animateDidMount(atX: number, atY: number, itemRef: object, itemIndex: number): void {
-        //no need
-    }
 
     public animateWillUpdate(fromX: number, fromY: number, toX: number, toY: number, itemRef: object, itemIndex: number): void {
         this._hasAnimatedOnce = true;

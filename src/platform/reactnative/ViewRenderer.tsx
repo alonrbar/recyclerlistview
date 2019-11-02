@@ -23,9 +23,7 @@ export default class ViewRenderer extends BaseViewRenderer {
                     flexDirection: this.props.isHorizontal ? "column" : "row",
                     left: this.props.x,
                     position: "absolute",
-                    top: this.props.y,
-                    ...this.props.styleOverrides,
-                    ...this.animatorStyleOverrides,
+                    top: this.props.y
                 }}>
                 {this.renderChild()}
             </View>
@@ -36,9 +34,7 @@ export default class ViewRenderer extends BaseViewRenderer {
                         position: "absolute",
                         top: this.props.y,
                         height: this.props.height,
-                        width: this.props.width,
-                        ...this.props.styleOverrides,
-                        ...this.animatorStyleOverrides,
+                        width: this.props.width
                     }}>
                     {this.renderChild()}
                 </View>
