@@ -138,12 +138,7 @@ export interface RecyclerListViewProps {
      * LayoutAnimation. By default, animations are JS driven to avoid workflow
      * interference. Also, please note LayoutAnimation is buggy on Android.
      */
-    itemAnimator?: ItemAnimator;
-    /**
-     * Enables you to utilize layout animations better by unmounting removed
-     * items. Please note, this might increase unmounts on large data changes.
-     */
-    optimizeForInsertDeleteAnimations?: boolean;
+    itemAnimator?: ItemAnimator;    
     /**
      * To pass down style to inner ScrollView 
      */
