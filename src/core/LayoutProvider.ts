@@ -1,44 +1,27 @@
 import { Layout, WrapGridLayoutManager, LayoutManager } from "./LayoutManager";
 
-/**
- * Created by talha.naqvi on 05/04/17.
- * You can create a new instance or inherit and override default methods
- * You may need access to data provider here, it might make sense to pass a function which lets you fetch the latest data provider
- * Why only indexes? The answer is to allow data virtualization in the future. Since layouts are accessed much before the actual render assuming having all
- * data upfront will only limit possibilites in the future.
- *
- * By design LayoutProvider forces you to think in terms of view types. What that means is that you'll always be dealing with a finite set of view templates
- * with deterministic dimensions. We want to eliminate unnecessary re-layouts that happen when height, by mistake, is not taken into consideration.
- * This patters ensures that your scrolling is as smooth as it gets. You can always increase the number of types to handle non deterministic scenarios.
- *
- * NOTE: You can also implement features such as ListView/GridView switch by simple changing your layout provider.
- */
+export class LayoutProvider {
 
-export abstract class BaseLayoutProvider {
-    //Unset if your new layout provider doesn't require firstVisibleIndex preservation on application
+    /**
+     * Unset if your new layout provider doesn't require firstVisibleIndex
+     * preservation on application 
+     */
     public shouldRefreshWithAnchoring: boolean = true;
-
-    //Return your layout manager, you get all required dependencies here. Also, make sure to use cachedLayouts. RLV might cache layouts and give back to
-    //in cases of conxtext preservation. Make sure you use them if provided.
-    public abstract newLayoutManager(renderWindowSize: Dimension, isHorizontal?: boolean, cachedLayouts?: Layout[]): LayoutManager;
-
-    //Check if given dimension contradicts with your layout provider, return true for mismatches. Returning true will
-    //cause a relayout to fix the discrepancy
-    public abstract checkDimensionDiscrepancy(dimension: Dimension, index: number): boolean;
-}
-
-export class LayoutProvider extends BaseLayoutProvider {
 
     private _setLayout: (dim: Dimension, index: number) => void;
     private _tempDim: Dimension;
     private _lastLayoutManager: WrapGridLayoutManager | undefined;
 
     constructor(setLayout: (dim: Dimension, index: number) => void) {
-        super();
         this._setLayout = setLayout;
         this._tempDim = { height: 0, width: 0 };
     }
 
+    /**
+     * Return your layout manager, you get all required dependencies here. Also,
+     * make sure to use cachedLayouts. RLV might cache layouts and give back to
+     * in cases of conxtext preservation. Make sure you use them if provided.
+     */
     public newLayoutManager(renderWindowSize: Dimension, isHorizontal?: boolean, cachedLayouts?: Layout[]): LayoutManager {
         this._lastLayoutManager = new WrapGridLayoutManager(this, renderWindowSize, isHorizontal, cachedLayouts);
         return this._lastLayoutManager;
@@ -50,6 +33,11 @@ export class LayoutProvider extends BaseLayoutProvider {
         return this._setLayout(dimension, index);
     }
 
+    /**
+     * Check if given dimension contradicts with your layout provider, return
+     * true for mismatches. Returning true will cause a relayout to fix the
+     * discrepancy.
+     */
     public checkDimensionDiscrepancy(dimension: Dimension, index: number): boolean {
         const dimension1 = dimension;
         this.setComputedLayout(this._tempDim, index);

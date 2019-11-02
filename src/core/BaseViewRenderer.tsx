@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Dimension, BaseLayoutProvider } from "./LayoutProvider";
+import { Dimension, LayoutProvider } from "./LayoutProvider";
 import ItemAnimator from "./ItemAnimator";
 
 
@@ -18,7 +18,7 @@ export interface ViewRendererProps {
     isHorizontal?: boolean;
     extendedState?: object;
     internalSnapshot?: object;
-    layoutProvider?: BaseLayoutProvider;
+    layoutProvider?: LayoutProvider;
 }
 
 /**

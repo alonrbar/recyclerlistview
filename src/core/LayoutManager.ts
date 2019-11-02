@@ -2,7 +2,8 @@ import { Dimension, LayoutProvider } from './LayoutProvider';
 import CustomError from './exceptions/CustomError';
 
 /***
- * Computes the positions and dimensions of items that will be rendered by the list. The output from this is utilized by viewability tracker to compute the
+ * Computes the positions and dimensions of items that will be rendered by the
+ * list. The output from this is utilized by viewability tracker to compute the
  * lists of visible/hidden item.
  */
 export abstract class LayoutManager {

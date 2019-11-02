@@ -1,5 +1,5 @@
 import RecycleItemPool from "../utils/RecycleItemPool";
-import { Dimension, BaseLayoutProvider } from "./LayoutProvider";
+import { Dimension, LayoutProvider } from "./LayoutProvider";
 import CustomError from "./exceptions/CustomError";
 import RecyclerListViewExceptions from "./exceptions/RecyclerListViewExceptions";
 import { Point, LayoutManager } from "./LayoutManager";
@@ -39,7 +39,7 @@ export default class VirtualRenderer {
     private _isViewTrackerRunning: boolean;
     private _markDirty: boolean;
     private _startKey: number;
-    private _layoutProvider: BaseLayoutProvider = TSCast.cast<BaseLayoutProvider>(null); //TSI
+    private _layoutProvider: LayoutProvider = TSCast.cast<LayoutProvider>(null); //TSI
     private _recyclePool: RecycleItemPool = TSCast.cast<RecycleItemPool>(null); //TSI
 
     private _params: RenderStackParams | null;
@@ -121,7 +121,7 @@ export default class VirtualRenderer {
         }
     }
 
-    public setLayoutProvider(layoutProvider: BaseLayoutProvider): void {
+    public setLayoutProvider(layoutProvider: LayoutProvider): void {
         this._layoutProvider = layoutProvider;
     }
 

@@ -78,7 +78,7 @@ not be as fast.
 
 | Prop | Required | Params Type | Description |
 | --- | --- | --- | --- |
-| layoutProvider | Yes | BaseLayoutProvider | Constructor function that defines the layout (height / width) of each element |
+| layoutProvider | Yes | LayoutProvider | Constructor function that defines the layout (height / width) of each element |
 | dataProvider | Yes | DataProvider | Constructor function the defines the data for each element |
 | contextProvider | No | ContextProvider | Used to maintain scroll position in case view gets destroyed, which often happens with back navigation |
 | rowRenderer | Yes | (type: string \| number, data: any, index: number) => JSX.Element \| JSX.Element[] \| null | Method that returns react component to be rendered. You get the type, data, index and extendedState of the view in the callback | 

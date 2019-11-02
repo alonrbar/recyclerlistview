@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Default, ObjectUtil } from 'ts-object-utils';
 import { Constants } from './constants/Constants';
 import { DataProvider } from './DataProvider';
-import { BaseLayoutProvider, Dimension } from './LayoutProvider';
+import { LayoutProvider, Dimension } from './LayoutProvider';
 import CustomError from './exceptions/CustomError';
 import RecyclerListViewExceptions from './exceptions/RecyclerListViewExceptions';
 import ItemAnimator from './ItemAnimator';
@@ -41,7 +41,7 @@ export interface OnRecreateParams {
  * NOTE: For reflowability set canChangeSize to true (experimental)
  */
 export interface RecyclerListViewProps {
-    layoutProvider: BaseLayoutProvider;
+    layoutProvider: LayoutProvider;
     dataProvider: DataProvider;
     rowRenderer: (index: number, extendedState?: object) => JSX.Element | JSX.Element[] | null;
     /**
