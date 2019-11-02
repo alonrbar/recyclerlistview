@@ -23,7 +23,7 @@ export default class ViewRenderer extends BaseViewRenderer {
         this._checkSizeChange();
     }
 
-    public renderCompat(): JSX.Element {
+    public render(): JSX.Element {
         const style: CSSProperties = this.props.forceNonDeterministicRendering
             ? {
                 transform: this._getTransform(),

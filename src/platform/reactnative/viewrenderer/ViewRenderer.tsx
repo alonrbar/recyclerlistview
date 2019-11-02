@@ -10,9 +10,12 @@ import BaseViewRenderer from "../../../core/viewrenderer/BaseViewRenderer";
  * This is second of the two things recycler works on. Implemented both for web and react native.
  */
 export default class ViewRenderer extends BaseViewRenderer {
+
     private _dim: Dimension = { width: 0, height: 0 };
+
     private _viewRef: React.Component<ViewProperties, React.ComponentState> | null = null;
-    public renderCompat(): JSX.Element {
+    
+    public render(): JSX.Element {
         return this.props.forceNonDeterministicRendering ? (
             <View ref={this._setRef}
             onLayout={this._onLayout}

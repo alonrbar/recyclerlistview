@@ -55,7 +55,7 @@ export default abstract class BaseViewRenderer extends React.Component<ViewRende
         this.props.itemAnimator.animateDidMount(this.props.x, this.props.y, this.getRef() as object, this.props.index);
     }
 
-    public componentWillMountCompat(): void {
+    public UNSAFE_componentWillMount(): void {
         this.animatorStyleOverrides = this.props.itemAnimator.animateWillMount(this.props.x, this.props.y, this.props.index);
     }
 

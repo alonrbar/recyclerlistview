@@ -8,10 +8,6 @@ import { ObjectUtil, Default } from "ts-object-utils";
 import TSCast from "../utils/TSCast";
 import { DataProvider } from "./dependencies/DataProvider";
 
-export interface RenderStackItem {
-    dataIndex?: number;
-}
-
 export interface StableIdMapItem {
     key: React.Key;
 }

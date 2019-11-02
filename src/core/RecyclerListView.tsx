@@ -1,9 +1,5 @@
 import * as React from 'react';
-import { Platform } from 'react-native';
 import { Default, ObjectUtil } from 'ts-object-utils';
-import { DefaultJSItemAnimator as DefaultItemAnimator } from '../platform/reactnative/itemanimators/defaultjsanimator/DefaultJSItemAnimator';
-import ScrollComponent from '../platform/reactnative/scrollcomponent/ScrollComponent';
-import ViewRenderer from '../platform/reactnative/viewrenderer/ViewRenderer';
 import { Constants } from './constants/Constants';
 import { Messages } from './constants/Messages';
 import ContextProvider from './dependencies/ContextProvider';
@@ -16,20 +12,25 @@ import { Layout, LayoutManager, Point } from './layoutmanager/LayoutManager';
 import { BaseScrollComponent } from './scrollcomponent/BaseScrollComponent';
 import { BaseScrollView, BaseScrollViewProps, ScrollEvent } from './scrollcomponent/BaseScrollView';
 import { TOnItemStatusChanged } from './ViewabilityTracker';
-import VirtualRenderer, { RenderStack, RenderStackItem, RenderStackParams } from './VirtualRenderer';
+import VirtualRenderer, { RenderStack, RenderStackParams } from './VirtualRenderer';
 import debounce = require("lodash.debounce");
+
 //#if [REACT-NATIVE]
-const IS_WEB = !Platform || Platform.OS === "web";
+// import { Platform } from 'react-native';
+// import { DefaultJSItemAnimator as DefaultItemAnimator } from '../platform/reactnative/itemanimators/defaultjsanimator/DefaultJSItemAnimator';
+// import ScrollComponent from '../platform/reactnative/scrollcomponent/ScrollComponent';
+// import ViewRenderer from '../platform/reactnative/viewrenderer/ViewRenderer';
+// const IS_WEB = !Platform || Platform.OS === "web";
 //#endif
 
 // To use on web, start importing from recyclerlistview/web. To make it even
 // easier specify an alias in you builder of choice.
 
 //#if [WEB]
-//import ScrollComponent from "../platform/web/scrollcomponent/ScrollComponent";
-//import ViewRenderer from "../platform/web/viewrenderer/ViewRenderer";
-//import { DefaultWebItemAnimator as DefaultItemAnimator } from "../platform/web/itemanimators/DefaultWebItemAnimator";
-//const IS_WEB = true;
+import ScrollComponent from "../platform/web/scrollcomponent/ScrollComponent";
+import ViewRenderer from "../platform/web/viewrenderer/ViewRenderer";
+import { DefaultWebItemAnimator as DefaultItemAnimator } from "../platform/web/itemanimators/DefaultWebItemAnimator";
+const IS_WEB = true;
 //#endif
 
 
@@ -317,7 +318,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
     // life cycle
     //
 
-    public componentWillReceivePropsCompat(newProps: RecyclerListViewProps): void {
+    public componentWillReceiveProps(newProps: RecyclerListViewProps): void {
         this._assertDependencyPresence(newProps);
         this._checkAndChangeLayouts(newProps);
         if (!this.props.onVisibleIndicesChanged) {
@@ -370,7 +371,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         }
     }
 
-    public componentWillMountCompat(): void {
+    public UNSAFE_componentWillMount(): void {
         if (this.props.contextProvider) {
             const uniqueKey = this.props.contextProvider.getUniqueKey();
             if (uniqueKey) {
@@ -397,7 +398,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
     // render
     //
 
-    public renderCompat(): JSX.Element {
+    public render(): JSX.Element {
         // TODO:Talha
         // const {
         //     layoutProvider,
