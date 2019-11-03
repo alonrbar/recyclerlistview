@@ -43,11 +43,11 @@ export interface RecyclerListViewProps {
     rowsCount: number;
     hasRowChanged: (index: number) => boolean;
     rowRenderer: (index: number) => React.ReactNode;
-    /**
-     * Used to maintain scroll position in case view gets destroyed e.g, cases
-     * of back navigation 
-     */
-    contextProvider?: Map<string, string | number>;
+    // /**
+    //  * Used to maintain scroll position in case view gets destroyed e.g, cases
+    //  * of back navigation 
+    //  */
+    //  TODO: contextProvider?: Map<string, string | number>;
     /**
      * Specify how many pixels in advance do you want views to be rendered.
      * Increasing this value can help reduce blanks (if any). However keeping
@@ -56,22 +56,7 @@ export interface RecyclerListViewProps {
      */
     renderAheadOffset?: number;
     isHorizontal?: boolean;
-    onScroll?: (rawEvent: ScrollEvent, offsetX: number, offsetY: number) => void;
-    /**
-     * Called when recreating recycler view from context provider. Gives you the
-     * initial params in the first frame itself to allow you to render content
-     * accordingly.
-     */
-    onRecreate?: (params: OnRecreateParams) => void;
-    /**
-     * Callback given when user scrolls to the end of the list or footer just
-     * becomes visible, useful in incremental loading scenarios
-     */
-    onEndReached?: () => void;
-    /**
-     * Specify how many pixels in advance you onEndReached callback
-     */
-    onEndReachedThreshold?: number;
+    onScroll?: (rawEvent: ScrollEvent, offsetX: number, offsetY: number) => void;            
     /**
      * Provide your own ScrollView Component. The contract for the scroll event
      * should match the native scroll event contract, i.e.:  
@@ -103,7 +88,7 @@ export interface RecyclerListViewProps {
      * as an externalScrollView. If you want this to be accounted in
      * scrollToOffset please override the method and handle manually.
      */
-    distanceFromWindow?: number;    
+    distanceFromWindow?: number;
     /**
      * Default is false, if enabled dimensions provided in layout provider will
      * not be strictly enforced. Rendered dimensions will be used to relayout
@@ -148,7 +133,6 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
         initialOffset: 0,
         initialRenderIndex: 0,
         isHorizontal: false,
-        onEndReachedThreshold: 0,
         distanceFromWindow: 0,
         renderAheadOffset: IS_WEB ? 1000 : 250,
     };
@@ -156,7 +140,6 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
     protected _virtualRenderer: VirtualRenderer;
 
     private refreshRequestDebouncer = debounce((toRun: VoidFunction) => toRun());
-    private _onEndReachedCalled = false;
     private _initComplete = false;
     private _relayoutReqIndex: number = -1;
     private _params: RenderStackParams = {
@@ -170,14 +153,14 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
     private _pendingScrollToOffset: Point | null = null;
     private _initialOffset = 0;
     private _cachedLayouts?: Layout[];
-    private _scrollComponent: BaseScrollComponent | null = null;
+    private _scrollComponent: BaseScrollComponent = null;
     private _defaultItemAnimator: ItemAnimator = new DefaultItemAnimator();
 
     constructor(props: RecyclerListViewProps, context?: any) {
         super(props, context);
 
         this._virtualRenderer = new VirtualRenderer(
-            this.updateItemsToRender,
+            itemsToRender => this.setState({ itemsToRender }),
             offset => { this._pendingScrollToOffset = offset; }
         );
 
@@ -210,15 +193,16 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
         this.scrollToIndex(lastIndex, animate);
     }
 
-    public scrollToOffset = (x: number, y: number, animate: boolean = false): void => {
-        if (this._scrollComponent) {
-            if (this.props.isHorizontal) {
-                y = 0;
-            } else {
-                x = 0;
-            }
-            this._scrollComponent.scrollTo(x, y, animate);
+    public scrollToOffset = (x: number, y: number, animate = false): void => {
+        if (!this._scrollComponent)
+            return;
+
+        if (this.props.isHorizontal) {
+            y = 0;
+        } else {
+            x = 0;
         }
+        this._scrollComponent.scrollTo(x, y, animate);
     }
 
     /**
@@ -237,33 +221,7 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
         return false;
     }
 
-    public getCurrentRenderAheadOffset(): number {
-        const viewabilityTracker = this._virtualRenderer.getViewabilityTracker();
-        if (viewabilityTracker) {
-            return viewabilityTracker.getCurrentRenderAheadOffset();
-        }
-        return this.props.renderAheadOffset!;
-    }
-
-    public getCurrentScrollOffset(): number {
-        const viewabilityTracker = this._virtualRenderer.getViewabilityTracker();
-        return viewabilityTracker ? viewabilityTracker.getLastActualOffset() : 0;
-    }
-
-    public findApproxFirstVisibleIndex(): number {
-        const viewabilityTracker = this._virtualRenderer.getViewabilityTracker();
-        return viewabilityTracker ? viewabilityTracker.findFirstLogicallyVisibleIndex() : 0;
-    }
-
-    public getRenderedSize(): Dimension {
-        return this._layout;
-    }
-
-    public getContentDimension(): Dimension {
-        return this._virtualRenderer.getContentDimension();
-    }
-
-    public forceRerender(): void {
+    public refresh(): void {
         this.setState({
             renderForcer: {},
         });
@@ -290,52 +248,12 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
                 this.scrollToOffset(offset.x, offset.y, false);
             }, 0);
         }
-        this._processOnEndReached();
-        this._checkAndChangeLayouts(this.props);
         if (this.props.rowsCount === 0) {
             console.warn(
                 "You have mounted RecyclerListView with an empty data provider (Size in 0). " +
                 "Please mount only if there is atleast one item " +
                 "to ensure optimal performance and to avoid unexpected behavior"
             ); //tslint:disable-line
-        }
-    }
-
-    public componentWillUnmount(): void {
-        if (this.props.contextProvider) {
-            this.props.contextProvider.set(Constants.CONTEXT_PROVIDER_OFFSET_KEY_SUFFIX, this.getCurrentScrollOffset());
-            if (this.props.forceNonDeterministicRendering) {
-                if (this._virtualRenderer) {
-                    const layoutManager = this._virtualRenderer.getLayoutManager();
-                    if (layoutManager) {
-                        const layoutsToCache = layoutManager.getLayouts();
-                        this.props.contextProvider.set(
-                            Constants.CONTEXT_PROVIDER_LAYOUT_KEY_SUFFIX,
-                            JSON.stringify({ layoutArray: layoutsToCache })
-                        );
-                    }
-                }
-            }
-        }
-    }
-
-    public UNSAFE_componentWillMount(): void {
-        if (this.props.contextProvider) {
-            const offset = this.props.contextProvider.get(Constants.CONTEXT_PROVIDER_OFFSET_KEY_SUFFIX);
-            if (typeof offset === "number" && offset > 0) {
-                this._initialOffset = offset;
-                if (this.props.onRecreate) {
-                    this.props.onRecreate({ lastOffset: this._initialOffset });
-                }
-                this.props.contextProvider.delete(Constants.CONTEXT_PROVIDER_OFFSET_KEY_SUFFIX);
-            }
-            if (this.props.forceNonDeterministicRendering) {
-                const cachedLayouts = this.props.contextProvider.get(Constants.CONTEXT_PROVIDER_LAYOUT_KEY_SUFFIX) as string;
-                if (cachedLayouts && typeof cachedLayouts === "string") {
-                    this._cachedLayouts = JSON.parse(cachedLayouts).layoutArray;
-                    this.props.contextProvider.delete(Constants.CONTEXT_PROVIDER_LAYOUT_KEY_SUFFIX);
-                }
-            }
         }
     }
 
@@ -349,7 +267,7 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
                 ref={scrollComponent => this._scrollComponent = scrollComponent}
                 {...this.props}
                 {...this.props.scrollViewProps}
-                onScroll={this._onScroll}
+                onScroll={this.onScroll}
                 onSizeChanged={this._onSizeChanged}
                 contentHeight={this._initComplete ? this._virtualRenderer.getContentDimension().height : 0}
                 contentWidth={this._initComplete ? this._virtualRenderer.getContentDimension().width : 0}
@@ -379,9 +297,6 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
 
         const rowLayout = this._virtualRenderer.getLayoutManager().getLayouts()[rowIndex];
         const key = this._virtualRenderer.syncAndGetKey(rowIndex);
-        if (!this.props.forceNonDeterministicRendering) {
-            this._checkExpectedDimensionDiscrepancy(rowLayout, rowIndex);
-        }
         return (
             <ViewRenderer
                 key={key}
@@ -394,12 +309,39 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
                 layoutProvider={this.props.layoutProvider}
                 forceNonDeterministicRendering={this.props.forceNonDeterministicRendering}
                 isHorizontal={this.props.isHorizontal}
-                onSizeChanged={this._onViewContainerSizeChange}
+                onSizeChanged={this.onRowSizeChange}
                 childRenderer={this.props.rowRenderer}
                 itemAnimator={this.props.itemAnimator || this._defaultItemAnimator}
                 renderForcer={this.state.renderForcer}
             />
         );
+    }
+
+    //
+    // event handlers
+    //
+
+    private onScroll = (offsetX: number, offsetY: number, rawEvent: ScrollEvent): void => {
+        // Adjusting offsets using distanceFromWindow
+        this._virtualRenderer.updateOffset(offsetX, offsetY, -this.props.distanceFromWindow!, true);
+
+        if (this.props.onScroll) {
+            this.props.onScroll(rawEvent, offsetX, offsetY);
+        }
+    }
+
+    private onRowSizeChange = (dim: Dimension, index: number): void => {
+
+        // Cannot be null here
+        const layoutManager = this._virtualRenderer.getLayoutManager();
+        if (layoutManager.overrideLayout(index, dim)) {
+            if (this._relayoutReqIndex === -1) {
+                this._relayoutReqIndex = index;
+            } else {
+                this._relayoutReqIndex = Math.min(this._relayoutReqIndex, index);
+            }
+            this._queueStateRefresh();
+        }
     }
 
     //
@@ -420,9 +362,6 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
             }
             this._refreshViewability();
         } else if (this.props.rowsCount !== newProps.rowsCount) {
-            if (newProps.rowsCount > this.props.rowsCount) {
-                this._onEndReachedCalled = false;
-            }
             const layoutManager = this._virtualRenderer.getLayoutManager();
             if (layoutManager) {
                 layoutManager.relayoutFromIndex(0, newProps.rowsCount);
@@ -447,9 +386,7 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
 
     private _queueStateRefresh(): void {
         this.refreshRequestDebouncer(() => {
-            this.setState((prevState) => {
-                return prevState;
-            });
+            this.setState({});
         });
     }
 
@@ -464,7 +401,6 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
         if (!this._initComplete) {
             this._initComplete = true;
             this._initTrackers();
-            this._processOnEndReached();
         } else {
             if ((hasHeightChanged && hasWidthChanged) ||
                 (hasHeightChanged && this.props.isHorizontal) ||
@@ -474,10 +410,6 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
                 this._refreshViewability();
             }
         }
-    }
-
-    private updateItemsToRender = (itemsToRender: ItemsToRender): void => {
-        this.setState({ itemsToRender });
     }
 
     private _initTrackers(): void {
@@ -500,60 +432,6 @@ export class RecyclerListView extends React.Component<RecyclerListViewProps, Rec
             this.setState({});
         } else {
             this._virtualRenderer.startViewabilityTracker();
-        }
-    }
-
-    private _onViewContainerSizeChange = (dim: Dimension, index: number): void => {
-
-        // Cannot be null here
-        const layoutManager: LayoutManager = this._virtualRenderer.getLayoutManager() as LayoutManager;
-
-        if (layoutManager.overrideLayout(index, dim)) {
-            if (this._relayoutReqIndex === -1) {
-                this._relayoutReqIndex = index;
-            } else {
-                this._relayoutReqIndex = Math.min(this._relayoutReqIndex, index);
-            }
-            this._queueStateRefresh();
-        }
-    }
-
-    private _checkExpectedDimensionDiscrepancy(itemRect: Dimension, index: number): void {
-        if (this.props.layoutProvider.checkDimensionDiscrepancy(itemRect, index)) {
-            if (this._relayoutReqIndex === -1) {
-                this._relayoutReqIndex = index;
-            } else {
-                this._relayoutReqIndex = Math.min(this._relayoutReqIndex, index);
-            }
-        }
-    }
-
-    private _onScroll = (offsetX: number, offsetY: number, rawEvent: ScrollEvent): void => {
-        //Adjusting offsets using distanceFromWindow
-        this._virtualRenderer.updateOffset(offsetX, offsetY, -this.props.distanceFromWindow!, true);
-
-        if (this.props.onScroll) {
-            this.props.onScroll(rawEvent, offsetX, offsetY);
-        }
-        this._processOnEndReached();
-    }
-
-    private _processOnEndReached(): void {
-        if (this.props.onEndReached && this._virtualRenderer) {
-            const layout = this._virtualRenderer.getContentDimension();
-            const viewabilityTracker = this._virtualRenderer.getViewabilityTracker();
-            if (viewabilityTracker) {
-                const windowBound = this.props.isHorizontal ? layout.width - this._layout.width : layout.height - this._layout.height;
-                const lastOffset = viewabilityTracker ? viewabilityTracker.getLastOffset() : 0;
-                if (windowBound - lastOffset <= (this.props.onEndReachedThreshold || 0)) {
-                    if (this.props.onEndReached && !this._onEndReachedCalled) {
-                        this._onEndReachedCalled = true;
-                        this.props.onEndReached();
-                    }
-                } else {
-                    this._onEndReachedCalled = false;
-                }
-            }
         }
     }
 }

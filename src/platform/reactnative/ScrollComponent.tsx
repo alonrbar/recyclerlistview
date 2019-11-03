@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from 'react-native';
-import { BaseScrollComponent, ScrollComponentProps } from '../../core/scroll/BaseScrollComponent';
+import { BaseScrollComponent } from '../../core/scroll/BaseScrollComponent';
 import TSCast from '../../utils/TSCast';
 
 /**
@@ -19,36 +19,19 @@ export default class ScrollComponent extends BaseScrollComponent {
         scrollThrottle: 16,
     };
 
-    private _height: number;
-    private _width: number;
-    private _isSizeChangedCalledOnce: boolean;
-    private _scrollViewRef: ScrollView | null = null;
-
-    constructor(args: ScrollComponentProps) {
-        super(args);
-        this._height = 0;
-        this._width = 0;
-        this._isSizeChangedCalledOnce = false;
-    }
+    private height = 0;
+    private width = 0;
+    private isSizeChangedCalledOnce = false;
+    private scrollViewRef: ScrollView = null;
 
     public scrollTo(x: number, y: number, isAnimated: boolean): void {
-        if (this._scrollViewRef) {
-            this._scrollViewRef.scrollTo({ x, y, animated: isAnimated });
-        }
+        if (!this.scrollViewRef)
+            return;
+        this.scrollViewRef.scrollTo({ x, y, animated: isAnimated });
     }
 
     public render(): JSX.Element {
-        const Scroller = TSCast.cast<ScrollView>(this.props.externalScrollView); //TSI
-        //TODO:Talha
-        // const {
-        //     contentHeight,
-        //     contentWidth,
-        //     externalScrollView,
-        //     canChangeSize,
-        //     isHorizontal,
-        //     scrollThrottle,
-        //     ...props,
-        // } = this.props;
+        const Scroller = TSCast.cast<ScrollView>(this.props.externalScrollView);
         return (
             <Scroller ref={this._getScrollViewRef}
                 removeClippedSubviews={false}
@@ -56,7 +39,7 @@ export default class ScrollComponent extends BaseScrollComponent {
                 {...this.props}
                 horizontal={this.props.isHorizontal}
                 onScroll={this._onScroll}
-                onLayout={(!this._isSizeChangedCalledOnce || this.props.canChangeSize) ? this._onLayout : this.props.onLayout}>
+                onLayout={(!this.isSizeChangedCalledOnce || this.props.canChangeSize) ? this._onLayout : this.props.onLayout}>
                 <View style={{ flexDirection: this.props.isHorizontal ? "row" : "column" }}>
                     <View style={{
                         height: this.props.contentHeight,
@@ -69,7 +52,7 @@ export default class ScrollComponent extends BaseScrollComponent {
         );
     }
 
-    private _getScrollViewRef = (scrollView: any) => { this._scrollViewRef = scrollView as (ScrollView | null); };
+    private _getScrollViewRef = (scrollView: any) => { this.scrollViewRef = scrollView as (ScrollView | null); };
 
     private _onScroll = (e?: NativeSyntheticEvent<NativeScrollEvent>): void => {
         if (e) {
@@ -78,11 +61,11 @@ export default class ScrollComponent extends BaseScrollComponent {
     }
 
     private _onLayout = (e: LayoutChangeEvent): void => {
-        if (this._height !== e.nativeEvent.layout.height || this._width !== e.nativeEvent.layout.width) {
-            this._height = e.nativeEvent.layout.height;
-            this._width = e.nativeEvent.layout.width;
+        if (this.height !== e.nativeEvent.layout.height || this.width !== e.nativeEvent.layout.width) {
+            this.height = e.nativeEvent.layout.height;
+            this.width = e.nativeEvent.layout.width;
             if (this.props.onSizeChanged) {
-                this._isSizeChangedCalledOnce = true;
+                this.isSizeChangedCalledOnce = true;
                 this.props.onSizeChanged(e.nativeEvent.layout);
             }
         }

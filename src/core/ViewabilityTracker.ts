@@ -92,16 +92,8 @@ export class ViewabilityTracker {
         }
     }
 
-    public getLastOffset(): number {
-        return this._currentOffset;
-    }
-
     public getLastActualOffset(): number {
         return this._actualOffset;
-    }
-
-    public getEngagedIndexes(): number[] {
-        return this._engagedIndexes;
     }
 
     public findFirstLogicallyVisibleIndex(): number {
@@ -307,7 +299,7 @@ export class ViewabilityTracker {
     private _diffArraysAndCallFunc(newItems: number[], oldItems: number[], func: TOnItemStatusChanged | null): void {
         if (!func)
             return;
-            
+
         const now = this._calculateArrayDiff(newItems, oldItems);
         const notNow = this._calculateArrayDiff(oldItems, newItems);
         if (now.length > 0 || notNow.length > 0) {

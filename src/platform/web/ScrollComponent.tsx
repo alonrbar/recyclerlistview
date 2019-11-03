@@ -3,13 +3,14 @@ import { Dimension } from '../../core/LayoutProvider';
 import { BaseScrollComponent, ScrollComponentProps } from '../../core/scroll/BaseScrollComponent';
 import { BaseScrollView, ScrollEvent } from '../../core/scroll/BaseScrollView';
 import ScrollViewer from './ScrollViewer';
-/***
+
+/**
  * The responsibility of a scroll component is to report its size, scroll events and provide a way to scroll to a given offset.
  * RecyclerListView works on top of this interface and doesn't care about the implementation. To support web we only had to provide
  * another component written on top of web elements
  */
-
 export default class ScrollComponent extends BaseScrollComponent {
+
     public static defaultProps = {
         contentHeight: 0,
         contentWidth: 0,
@@ -18,14 +19,10 @@ export default class ScrollComponent extends BaseScrollComponent {
         scrollThrottle: 16,
         canChangeSize: false,
     };
-    private _height: number;
-    private _width: number;
     private _scrollViewRef: BaseScrollView | null = null;
 
     constructor(args: ScrollComponentProps) {
         super(args);
-        this._height = 0;
-        this._width = 0;
     }
 
     public scrollTo(x: number, y: number, animated: boolean): void {
