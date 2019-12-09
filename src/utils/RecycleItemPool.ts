@@ -19,8 +19,8 @@ export default class RecycleItemPool {
         if (!this.keys.size)
             return undefined;
 
-        const iterResult = this.keys.keys().next();
-        const result = iterResult.value;
+        const keysIterator = this.keys.keys().next();
+        const result = keysIterator.value;
 
         this.keys.delete(result);
         

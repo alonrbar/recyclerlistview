@@ -27,26 +27,29 @@ export interface RenderStackParams {
  */
 export class VirtualRenderer {
 
-    private _scrollOnNextUpdate: (point: Point) => void;
+    private scrollOnNextUpdate: (point: Point) => void;
     /**
      * Keeps track of keys of all the currently rendered indexes, can eventually
      * replace renderStack as well if no new use cases come up
      */
-    private _stableIdToRenderKeyMap: { [key: string]: StableIdMapItem };
-    private _engagedIndexes: { [key: number]: number };
+    private stableIdToRenderKeyMap: { [key: string]: StableIdMapItem } = {};
+    private engagedIndexes: { [key: number]: number } = {};
     /**
      * Keeps track of items that need to be rendered in the next render cycle
      */
-    private itemsToRender: ItemsToRender;
+    private itemsToRender: ItemsToRender = {};
     private onRenderItems: (itemsToRender: ItemsToRender) => void;
-    private _isViewTrackerRunning: boolean;
-    private _markDirty: boolean;
-    private _startKey: number;
-    private _recyclePool: RecycleItemPool = TSCast.cast<RecycleItemPool>(null); //TSI
-    private _params: RenderStackParams | null;
-    private _layoutManager: LayoutManager | null = null;
-    private _viewabilityTracker: ViewabilityTracker | null = null;
-    private _dimensions: Dimension | null;
+    private isViewTrackerRunning = false;
+    private markDirty = false;
+    /**
+     * Would be surprised if someone exceeds this
+     */
+    private startKey = 0;
+    private recyclePool: RecycleItemPool = TSCast.cast<RecycleItemPool>(null); //TSI
+    private params: RenderStackParams | null = null;
+    private layoutManager: LayoutManager | null = null;
+    private viewabilityTracker: ViewabilityTracker | null = null;
+    private dimensions: Dimension | null = null;
 
     constructor(
         onRenderItems: (itemsToRender: ItemsToRender) => void,
@@ -54,19 +57,7 @@ export class VirtualRenderer {
     ) {
 
         this.onRenderItems = onRenderItems;
-        this._scrollOnNextUpdate = scrollOnNextUpdate;
-        this.itemsToRender = {};
-
-        this._stableIdToRenderKeyMap = {};
-        this._engagedIndexes = {};
-        this._dimensions = null;
-        this._params = null;
-
-        this._isViewTrackerRunning = false;
-        this._markDirty = false;
-
-        // Would be surprised if someone exceeds this
-        this._startKey = 0;
+        this.scrollOnNextUpdate = scrollOnNextUpdate;
     }
 
     //
@@ -75,81 +66,81 @@ export class VirtualRenderer {
 
     public init(): void {
         this.getInitialOffset();
-        this._recyclePool = new RecycleItemPool();
-        if (this._params) {
-            this._viewabilityTracker = new ViewabilityTracker(
-                (this._params.renderAheadOffset || 0),
-                (this._params.initialOffset || 0));
+        this.recyclePool = new RecycleItemPool();
+        if (this.params) {
+            this.viewabilityTracker = new ViewabilityTracker(
+                (this.params.renderAheadOffset || 0),
+                (this.params.initialOffset || 0));
         } else {
-            this._viewabilityTracker = new ViewabilityTracker(0, 0);
+            this.viewabilityTracker = new ViewabilityTracker(0, 0);
         }
         this._prepareViewabilityTracker();
     }
 
     public getContentDimension(): Dimension {
-        if (this._layoutManager) {
-            return this._layoutManager.getContentDimension();
+        if (this.layoutManager) {
+            return this.layoutManager.getContentDimension();
         }
         return { height: 0, width: 0 };
     }
 
     public updateOffset(offsetX: number, offsetY: number, correction: number, isActual: boolean): void {
-        if (!this._viewabilityTracker)
+        if (!this.viewabilityTracker)
             return;
 
-        const offset = this._params && this._params.isHorizontal ? offsetX : offsetY;
-        if (!this._isViewTrackerRunning) {
+        const offset = this.params && this.params.isHorizontal ? offsetX : offsetY;
+        if (!this.isViewTrackerRunning) {
             if (isActual) {
-                this._viewabilityTracker.setActualOffset(offset);
+                this.viewabilityTracker.setActualOffset(offset);
             }
             this.startViewabilityTracker();
         }
-        this._viewabilityTracker.updateOffset(offset, correction, isActual);
+        this.viewabilityTracker.updateOffset(offset, correction, isActual);
     }
 
     public getLayoutManager(): LayoutManager | null {
-        return this._layoutManager;
+        return this.layoutManager;
     }
 
     public setParamsAndDimensions(params: RenderStackParams, dim: Dimension): void {
-        this._params = params;
-        this._dimensions = dim;
+        this.params = params;
+        this.dimensions = dim;
     }
 
     public setLayoutManager(layoutManager: LayoutManager): void {
-        this._layoutManager = layoutManager;
-        if (this._params) {
-            this._layoutManager.relayoutFromIndex(0, this._params.itemCount);
+        this.layoutManager = layoutManager;
+        if (this.params) {
+            this.layoutManager.relayoutFromIndex(0, this.params.itemCount);
         }
     }
 
     public getViewabilityTracker(): ViewabilityTracker | null {
-        return this._viewabilityTracker;
+        return this.viewabilityTracker;
     }
 
     public refreshWithAnchor(): void {
-        if (this._viewabilityTracker) {
-            let firstVisibleIndex = this._viewabilityTracker.findFirstLogicallyVisibleIndex();
+        if (this.viewabilityTracker) {
+            let firstVisibleIndex = this.viewabilityTracker.findFirstLogicallyVisibleIndex();
             this._prepareViewabilityTracker();
             let offset = 0;
-            if (this._layoutManager && this._params) {
-                firstVisibleIndex = Math.min(this._params.itemCount - 1, firstVisibleIndex);
-                const point = this._layoutManager.getOffsetForIndex(firstVisibleIndex);
-                this._scrollOnNextUpdate(point);
-                offset = this._params.isHorizontal ? point.x : point.y;
+            if (this.layoutManager && this.params) {
+                firstVisibleIndex = Math.min(this.params.itemCount - 1, firstVisibleIndex);
+                const point = this.layoutManager.getOffsetForIndex(firstVisibleIndex);
+                this.scrollOnNextUpdate(point);
+                offset = this.params.isHorizontal ? point.x : point.y;
             }
-            this._viewabilityTracker.forceRefreshWithOffset(offset);
+            this.viewabilityTracker.forceRefreshWithOffset(offset);
         }
     }
 
     public refresh(): void {
-        if (this._viewabilityTracker) {
+        if (this.viewabilityTracker) {
             this._prepareViewabilityTracker();
-            if (this._viewabilityTracker.forceRefresh()) {
-                if (this._params && this._params.isHorizontal) {
-                    this._scrollOnNextUpdate({ x: this._viewabilityTracker.getLastActualOffset(), y: 0 });
+            if (this.viewabilityTracker.forceRefresh()) {
+                if (this.params && this.params.isHorizontal) {
+                    this.scrollOnNextUpdate({ x: this.viewabilityTracker.getLastActualOffset(), y: 0 });
                 } else {
-                    this._scrollOnNextUpdate({ x: 0, y: this._viewabilityTracker.getLastActualOffset() });
+                    this.scrollOnNextUpdate({ x: 0, y: this.viewabilityTracker.getLastActualOffset() });
                 }
             }
         }
@@ -157,17 +148,17 @@ export class VirtualRenderer {
 
     public getInitialOffset(): Point {
         let offset = { x: 0, y: 0 };
-        if (this._params) {
-            const initialRenderIndex = (this._params.initialRenderIndex || 0);
-            if (initialRenderIndex > 0 && this._layoutManager) {
-                offset = this._layoutManager.getOffsetForIndex(initialRenderIndex);
-                this._params.initialOffset = this._params.isHorizontal ? offset.x : offset.y;
+        if (this.params) {
+            const initialRenderIndex = (this.params.initialRenderIndex || 0);
+            if (initialRenderIndex > 0 && this.layoutManager) {
+                offset = this.layoutManager.getOffsetForIndex(initialRenderIndex);
+                this.params.initialOffset = this.params.isHorizontal ? offset.x : offset.y;
             } else {
-                if (this._params.isHorizontal) {
-                    offset.x = (this._params.initialOffset || 0);
+                if (this.params.isHorizontal) {
+                    offset.x = (this.params.initialOffset || 0);
                     offset.y = 0;
                 } else {
-                    offset.y = (this._params.initialOffset || 0);
+                    offset.y = (this.params.initialOffset || 0);
                     offset.x = 0;
                 }
             }
@@ -176,24 +167,24 @@ export class VirtualRenderer {
     }
 
     public startViewabilityTracker(): void {
-        if (this._viewabilityTracker) {
-            this._isViewTrackerRunning = true;
-            this._viewabilityTracker.init();
+        if (this.viewabilityTracker) {
+            this.isViewTrackerRunning = true;
+            this.viewabilityTracker.init();
         }
     }
 
     public syncAndGetKey(rowIndex: number): React.Key {
-        const stableIdItem = this._stableIdToRenderKeyMap[rowIndex];
+        const stableIdItem = this.stableIdToRenderKeyMap[rowIndex];
         let key: React.Key = stableIdItem ? stableIdItem.key : undefined;
 
         if (isNullOrUndefined(key)) {
-            key = this._recyclePool.getNext();
+            key = this.recyclePool.getNext();
             if (!isNullOrUndefined(key)) {
                 const oldIndex = this.itemsToRender[key];
                 if (oldIndex !== null && oldIndex !== undefined) {
                     this.itemsToRender[key] = rowIndex;
                     if (!isNullOrUndefined(oldIndex) && oldIndex !== rowIndex) {
-                        delete this._stableIdToRenderKeyMap[oldIndex];
+                        delete this.stableIdToRenderKeyMap[oldIndex];
                     }
                 } else {
                     this.itemsToRender[key] = rowIndex;
@@ -208,11 +199,11 @@ export class VirtualRenderer {
                 }
                 this.itemsToRender[key] = rowIndex;
             }
-            this._markDirty = true;
-            this._stableIdToRenderKeyMap[rowIndex] = { key };
+            this.markDirty = true;
+            this.stableIdToRenderKeyMap[rowIndex] = { key };
         }
-        if (!isNullOrUndefined(this._engagedIndexes[rowIndex])) {
-            this._recyclePool.remove(key);
+        if (!isNullOrUndefined(this.engagedIndexes[rowIndex])) {
+            this.recyclePool.remove(key);
         }
         const indexToCompare = this.itemsToRender[key];
         if (indexToCompare !== undefined && indexToCompare !== rowIndex) {
@@ -227,19 +218,19 @@ export class VirtualRenderer {
     //
 
     private _getCollisionAvoidingKey(): string {
-        return "#" + this._startKey++ + "_rlv_c";
+        return "#" + this.startKey++ + "_rlv_c";
     }
 
     private _prepareViewabilityTracker(): void {
-        if (this._viewabilityTracker && this._layoutManager && this._dimensions && this._params) {
-            this._viewabilityTracker.onEngagedRowsChanged = this._onEngagedItemsChanged;
-            this._viewabilityTracker.setLayouts(this._layoutManager.getLayouts(), this._params.isHorizontal ?
-                this._layoutManager.getContentDimension().width :
-                this._layoutManager.getContentDimension().height);
-            this._viewabilityTracker.setDimensions({
-                height: this._dimensions.height,
-                width: this._dimensions.width,
-            }, this._params.isHorizontal);
+        if (this.viewabilityTracker && this.layoutManager && this.dimensions && this.params) {
+            this.viewabilityTracker.onEngagedRowsChanged = this._onEngagedItemsChanged;
+            this.viewabilityTracker.setLayouts(this.layoutManager.getLayouts(), this.params.isHorizontal ?
+                this.layoutManager.getContentDimension().width :
+                this.layoutManager.getContentDimension().height);
+            this.viewabilityTracker.setDimensions({
+                height: this.dimensions.height,
+                width: this.dimensions.width,
+            }, this.params.isHorizontal);
         } else {
             throw new CustomError(RecyclerListViewExceptions.initializationException);
         }
@@ -251,14 +242,14 @@ export class VirtualRenderer {
         let disengagedIndex = 0;
         for (let i = 0; i < count; i++) {
             disengagedIndex = notNow[i];
-            delete this._engagedIndexes[disengagedIndex];
-            if (this._params && disengagedIndex < this._params.itemCount) {
+            delete this.engagedIndexes[disengagedIndex];
+            if (this.params && disengagedIndex < this.params.itemCount) {
                 // All the items which are now not visible can go to the
                 // recycle pool, the pool only needs to maintain keys since
                 // react can link a view to a key automatically
-                resolvedKey = this._stableIdToRenderKeyMap[disengagedIndex];
+                resolvedKey = this.stableIdToRenderKeyMap[disengagedIndex];
                 if (!isNullOrUndefined(resolvedKey)) {
-                    this._recyclePool.add(resolvedKey.key);
+                    this.recyclePool.add(resolvedKey.key);
                 }
             }
         }
@@ -272,17 +263,17 @@ export class VirtualRenderer {
      * Updates render stack and reports whether anything has changed
      */
     private _updateRenderStack(itemIndexes: number[]): boolean {
-        this._markDirty = false;
+        this.markDirty = false;
         const count = itemIndexes.length;
         let index = 0;
         let hasRenderStackChanged = false;
         for (let i = 0; i < count; i++) {
             index = itemIndexes[i];
-            this._engagedIndexes[index] = 1;
+            this.engagedIndexes[index] = 1;
             this.syncAndGetKey(index);
-            hasRenderStackChanged = this._markDirty;
+            hasRenderStackChanged = this.markDirty;
         }
-        this._markDirty = false;
+        this.markDirty = false;
         return hasRenderStackChanged;
     }
 }

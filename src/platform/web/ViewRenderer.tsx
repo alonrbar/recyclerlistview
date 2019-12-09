@@ -12,6 +12,7 @@ import BaseViewRenderer from "../../core/BaseViewRenderer";
 export default class ViewRenderer extends BaseViewRenderer {
     private _dim: Dimension = { width: 0, height: 0 };
     private _mainDiv: HTMLDivElement | null = null;
+    
     public componentDidMount(): void {
         if (super.componentDidMount) {
             super.componentDidMount();
@@ -32,10 +33,10 @@ export default class ViewRenderer extends BaseViewRenderer {
             }
             : {
                 height: this.props.height,
-                overflow: "hidden",
                 width: this.props.width,
                 transform: this._getTransform(),
                 WebkitTransform: this._getTransform(),
+                overflow: "hidden",
                 ...styles.baseViewStyle
             };
         return (
